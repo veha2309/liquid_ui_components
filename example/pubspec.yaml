@@ -1,0 +1,14 @@
+name: liquid_retina_navigation_example
+description: Standalone example of liquid retina navigation.
+publish_to: none
+environment:
+  sdk: '>=3.12.2 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  liquid_retina_navigation:
+    path: ../
+dev_dependencies:
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true

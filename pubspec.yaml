@@ -1,0 +1,23 @@
+name: liquid_retina_navigation
+description: A liquid glass bottom navigation bar for Android with optical refraction, spring animations, hold-to-preview and controlled drag selection.
+version: 0.1.0
+repository: https://github.com/veha2309/liquid_retina_navigation
+issue_tracker: https://github.com/veha2309/liquid_retina_navigation/issues
+topics:
+  - navigation
+  - liquid-glass
+  - android
+  - widgets
+environment:
+  sdk: '>=3.12.2 <4.0.0'
+  flutter: '>=3.44.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  liquid_glass_easy: ^3.3.1
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+platforms:
+  android:
