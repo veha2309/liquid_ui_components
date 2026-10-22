@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'liquid_glass_surface.dart';
+import 'liquid_glass_dynamics.dart';
 
 export 'liquid_glass_slider.dart';
 
@@ -27,25 +30,43 @@ class LiquidGlassButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget button = LiquidGlassSurface(
-      settings: settings,
+    final config = settings ?? LiquidGlassTheme.of(context);
+    Widget button = _GlassActionDynamics(
+      enabled: onPressed != null,
+      intensity: config.dynamicsIntensity,
       borderRadius: borderRadius,
-      child: Builder(
-        builder: (context) {
-          final foreground = DefaultTextStyle.of(context).style.color!;
-          return TextButton(
-            autofocus: autofocus,
-            onPressed: onPressed,
-            style: TextButton.styleFrom(
-              foregroundColor: foreground,
-              disabledForegroundColor: foreground.withValues(alpha: 0.38),
-              minimumSize: const Size(48, 48),
-              padding: padding,
-              shape: RoundedRectangleBorder(borderRadius: borderRadius),
-            ),
-            child: child,
-          );
-        },
+      builder: (states) => LiquidGlassSurface(
+        settings: settings,
+        borderRadius: borderRadius,
+        child: Builder(
+          builder: (context) {
+            final foreground = DefaultTextStyle.of(context).style.color!;
+            return TextButton(
+              statesController: states,
+              autofocus: autofocus,
+              onPressed: onPressed,
+              style:
+                  TextButton.styleFrom(
+                    foregroundColor: foreground,
+                    disabledForegroundColor: foreground.withValues(alpha: 0.38),
+                    minimumSize: const Size(48, 48),
+                    padding: padding,
+                    shape: RoundedRectangleBorder(borderRadius: borderRadius),
+                    splashFactory: NoSplash.splashFactory,
+                    overlayColor: Colors.transparent,
+                  ).copyWith(
+                    overlayColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.focused)
+                          ? foreground.withValues(alpha: 0.12)
+                          : states.contains(WidgetState.hovered)
+                          ? foreground.withValues(alpha: 0.06)
+                          : Colors.transparent,
+                    ),
+                  ),
+              child: child,
+            );
+          },
+        ),
       ),
     );
     if (tooltip != null) button = Tooltip(message: tooltip!, child: button);
@@ -99,17 +120,21 @@ class LiquidGlassToolbar extends StatelessWidget {
   final WrapAlignment alignment;
 
   @override
-  Widget build(BuildContext context) => LiquidGlassSurface(
-    settings: settings,
-    padding: padding,
-    child: Material(
-      type: MaterialType.transparency,
-      child: Wrap(
-        spacing: spacing,
-        runSpacing: spacing,
-        alignment: alignment,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: children,
+  Widget build(BuildContext context) => LiquidGlassDynamics(
+    intensity:
+        (settings ?? LiquidGlassTheme.of(context)).dynamicsIntensity * 0.45,
+    child: LiquidGlassSurface(
+      settings: settings,
+      padding: padding,
+      child: Material(
+        type: MaterialType.transparency,
+        child: Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          alignment: alignment,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: children,
+        ),
       ),
     ),
   );
@@ -147,103 +172,107 @@ class LiquidGlassSegmentedControl<T> extends StatelessWidget {
   final bool showSelectedIcon;
 
   @override
-  Widget build(BuildContext context) => LiquidGlassSurface(
-    settings: settings,
-    borderRadius: BorderRadius.circular(28),
-    padding: const EdgeInsets.all(4),
-    child: Builder(
-      builder: (context) {
-        final foreground = DefaultTextStyle.of(context).style.color!;
-        final config = settings ?? LiquidGlassTheme.of(context);
-        final index = segments.indexWhere(
-          (segment) => segment.value == selected,
-        );
-        final rtl = Directionality.of(context) == TextDirection.rtl;
-        final fraction = index / (segments.length - 1);
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: IgnorePointer(
-                child: ExcludeSemantics(
-                  child: AnimatedAlign(
-                    alignment: Alignment(
-                      (rtl ? 1 - fraction : fraction) * 2 - 1,
-                      0,
-                    ),
-                    duration: MediaQuery.disableAnimationsOf(context)
-                        ? Duration.zero
-                        : config.animationDuration,
-                    curve: Curves.easeOutCubic,
-                    child: FractionallySizedBox(
-                      widthFactor: 1 / segments.length,
-                      heightFactor: 1,
-                      child: LiquidGlassSurface(
-                        key: const ValueKey('glass-segment-selector'),
-                        settings: config.copyWith(
-                          variant: LiquidGlassVariant.clear,
-                          opacity: 0.16,
-                          blur: 0,
-                          shadowBlur: 6,
-                          shadowOpacity: 0.08,
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.white.withValues(alpha: 0.26),
-                                foreground.withValues(alpha: 0.10),
-                              ],
-                            ),
+  Widget build(BuildContext context) => LiquidGlassDynamics(
+    enabled: onSelectionChanged != null,
+    intensity:
+        (settings ?? LiquidGlassTheme.of(context)).dynamicsIntensity * 0.6,
+    child: LiquidGlassSurface(
+      settings: settings,
+      borderRadius: BorderRadius.circular(28),
+      padding: const EdgeInsets.all(4),
+      child: Builder(
+        builder: (context) {
+          final foreground = DefaultTextStyle.of(context).style.color!;
+          final config = settings ?? LiquidGlassTheme.of(context);
+          final index = segments.indexWhere(
+            (segment) => segment.value == selected,
+          );
+          final rtl = Directionality.of(context) == TextDirection.rtl;
+          final fraction = index / (segments.length - 1);
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: ExcludeSemantics(
+                    child: _GlassSelectionSlide(
+                      position: (rtl ? 1 - fraction : fraction) * 2 - 1,
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : config.animationDuration,
+                      intensity: config.dynamicsIntensity,
+                      child: FractionallySizedBox(
+                        widthFactor: 1 / segments.length,
+                        heightFactor: 1,
+                        child: LiquidGlassSurface(
+                          key: const ValueKey('glass-segment-selector'),
+                          settings: config.copyWith(
+                            variant: LiquidGlassVariant.clear,
+                            opacity: 0.16,
+                            blur: 0,
+                            shadowBlur: 6,
+                            shadowOpacity: 0.08,
                           ),
-                          child: const SizedBox.expand(),
+                          borderRadius: BorderRadius.circular(24),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.26),
+                                  foreground.withValues(alpha: 0.10),
+                                ],
+                              ),
+                            ),
+                            child: const SizedBox.expand(),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            SegmentedButton<T>(
-              segments: segments,
-              selected: {selected},
-              onSelectionChanged: onSelectionChanged == null
-                  ? null
-                  : (values) => onSelectionChanged!(values.single),
-              showSelectedIcon: showSelectedIcon,
-              style: ButtonStyle(
-                minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-                side: WidgetStateProperty.resolveWith(
-                  (states) => states.contains(WidgetState.focused)
-                      ? BorderSide(color: foreground, width: 2)
-                      : BorderSide.none,
-                ),
-                splashFactory: NoSplash.splashFactory,
-                animationDuration: Duration.zero,
-                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-                foregroundColor: WidgetStateProperty.resolveWith(
-                  (states) => foreground.withValues(
-                    alpha: states.contains(WidgetState.disabled) ? 0.38 : 1,
+              SegmentedButton<T>(
+                segments: segments,
+                selected: {selected},
+                onSelectionChanged: onSelectionChanged == null
+                    ? null
+                    : (values) => onSelectionChanged!(values.single),
+                showSelectedIcon: showSelectedIcon,
+                style: ButtonStyle(
+                  minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+                  side: WidgetStateProperty.resolveWith(
+                    (states) => states.contains(WidgetState.focused)
+                        ? BorderSide(color: foreground, width: 2)
+                        : BorderSide.none,
                   ),
-                ),
-                backgroundColor: const WidgetStatePropertyAll(
-                  Colors.transparent,
-                ),
-                textStyle: WidgetStateProperty.resolveWith(
-                  (states) => TextStyle(
-                    fontWeight: states.contains(WidgetState.selected)
-                        ? FontWeight.w700
-                        : FontWeight.w500,
+                  splashFactory: NoSplash.splashFactory,
+                  animationDuration: Duration.zero,
+                  overlayColor: const WidgetStatePropertyAll(
+                    Colors.transparent,
+                  ),
+                  foregroundColor: WidgetStateProperty.resolveWith(
+                    (states) => foreground.withValues(
+                      alpha: states.contains(WidgetState.disabled) ? 0.38 : 1,
+                    ),
+                  ),
+                  backgroundColor: const WidgetStatePropertyAll(
+                    Colors.transparent,
+                  ),
+                  textStyle: WidgetStateProperty.resolveWith(
+                    (states) => TextStyle(
+                      fontWeight: states.contains(WidgetState.selected)
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     ),
   );
 }
@@ -266,16 +295,176 @@ class LiquidGlassSwitch extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) => LiquidGlassSurface(
-    settings: settings,
-    child: Semantics(
-      label: semanticLabel,
-      child: Switch(
-        value: value,
-        onChanged: onChanged,
-        autofocus: autofocus,
-        materialTapTargetSize: MaterialTapTargetSize.padded,
+  Widget build(BuildContext context) => LiquidGlassDynamics(
+    enabled: onChanged != null,
+    intensity:
+        (settings ?? LiquidGlassTheme.of(context)).dynamicsIntensity * 0.8,
+    child: LiquidGlassSurface(
+      settings: settings,
+      child: Semantics(
+        label: semanticLabel,
+        child: Switch(
+          value: value,
+          onChanged: onChanged,
+          autofocus: autofocus,
+          materialTapTargetSize: MaterialTapTargetSize.padded,
+        ),
       ),
     ),
+  );
+}
+
+class _GlassActionDynamics extends StatefulWidget {
+  const _GlassActionDynamics({
+    required this.enabled,
+    required this.intensity,
+    required this.borderRadius,
+    required this.builder,
+  });
+  final bool enabled;
+  final double intensity;
+  final BorderRadius borderRadius;
+  final Widget Function(WidgetStatesController) builder;
+
+  @override
+  State<_GlassActionDynamics> createState() => _GlassActionDynamicsState();
+}
+
+class _GlassActionDynamicsState extends State<_GlassActionDynamics> {
+  final _states = WidgetStatesController();
+  final _pressed = ValueNotifier(false);
+  @override
+  void initState() {
+    super.initState();
+    _states.addListener(_syncPressed);
+  }
+
+  void _syncPressed() {
+    final next = _states.value.contains(WidgetState.pressed);
+    if (_pressed.value == next) return;
+    // Native buttons also update disabled/focus state while building. Only
+    // forward press changes, deferring a build-time cancellation safely.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _pressed.value = _states.value.contains(WidgetState.pressed);
+        }
+      });
+    } else {
+      _pressed.value = next;
+    }
+  }
+
+  @override
+  void dispose() {
+    _states.removeListener(_syncPressed);
+    _states.dispose();
+    _pressed.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _pressed,
+    child: widget.builder(_states),
+    builder: (context, child) => LiquidGlassDynamics(
+      enabled: widget.enabled,
+      intensity: widget.intensity,
+      borderRadius: widget.borderRadius,
+      pressed: _pressed.value,
+      child: child!,
+    ),
+  );
+}
+
+class _GlassSelectionSlide extends StatefulWidget {
+  const _GlassSelectionSlide({
+    required this.position,
+    required this.duration,
+    required this.intensity,
+    required this.child,
+  });
+  final double position;
+  final Duration duration;
+  final double intensity;
+  final Widget child;
+  @override
+  State<_GlassSelectionSlide> createState() => _GlassSelectionSlideState();
+}
+
+class _GlassSelectionSlideState extends State<_GlassSelectionSlide>
+    with SingleTickerProviderStateMixin {
+  late final _position = AnimationController.unbounded(
+    vsync: this,
+    value: widget.position,
+  );
+  bool _reduceMotion = false;
+
+  void _move() {
+    if (_reduceMotion ||
+        widget.duration == Duration.zero ||
+        widget.intensity == 0) {
+      _position.value = widget.position;
+    } else if (_position.value != widget.position) {
+      _position.animateWith(
+        SpringSimulation(
+          SpringDescription.withDurationAndBounce(
+            duration: widget.duration,
+            bounce: 0.03,
+          ),
+          _position.value,
+          widget.position,
+          _position.velocity,
+          snapToEnd: true,
+          tolerance: const Tolerance(distance: 0.001, velocity: 0.01),
+        ),
+      );
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    _move();
+  }
+
+  @override
+  void didUpdateWidget(_GlassSelectionSlide oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.position != widget.position ||
+        oldWidget.duration != widget.duration ||
+        oldWidget.intensity != widget.intensity) {
+      _move();
+    }
+  }
+
+  @override
+  void dispose() {
+    _position.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _position,
+    child: widget.child,
+    builder: (context, child) {
+      final stretch =
+          (_position.velocity.abs() / 15).clamp(0.0, 1.0) * widget.intensity;
+      return Align(
+        alignment: Alignment(_position.value, 0),
+        child: Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.diagonal3Values(
+            1 + stretch * 0.10,
+            1 - stretch * 0.05,
+            1,
+          ),
+          child: child,
+        ),
+      );
+    },
   );
 }

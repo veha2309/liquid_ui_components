@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'liquid_glass_surface.dart';
+import 'liquid_glass_dynamics.dart';
 
 /// A controlled glass slider with a filled capsule and an optical thumb.
 /// Flutter's Slider owns gestures, focus, keyboard and screen-reader actions.
@@ -48,11 +49,19 @@ class LiquidGlassSlider extends StatefulWidget {
 
 class _LiquidGlassSliderState extends State<LiquidGlassSlider> {
   bool _dragging = false;
+  double _dragDelta = 0;
 
   @override
   void didUpdateWidget(LiquidGlassSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.onChanged == null) _dragging = false;
+    if (widget.onChanged == null) {
+      _dragging = false;
+      _dragDelta = 0;
+    } else if (_dragging) {
+      _dragDelta =
+          ((widget.value - oldWidget.value) / (widget.max - widget.min) * 18)
+              .clamp(-1.0, 1.0);
+    }
   }
 
   @override
@@ -77,20 +86,19 @@ class _LiquidGlassSliderState extends State<LiquidGlassSlider> {
             : (rawFraction * widget.divisions!).round() / widget.divisions!;
         final rtl = Directionality.of(context) == TextDirection.rtl;
         final center = inset + travel * (rtl ? 1 - fraction : fraction);
-        final thumbSize =
-            (widget.height - (_dragging && !reduceMotion ? 8 : 16)).clamp(
-              0.0,
-              width,
-            );
+        final lift = _dragging && !reduceMotion
+            ? settings.dynamicsIntensity
+            : 0.0;
+        final thumbSize = (widget.height - 16 + lift * 8).clamp(0.0, width);
         final thumbSettings = settings.copyWith(
           variant: LiquidGlassVariant.clear,
           opacity: enabled ? 0.18 : 0.10,
           blur: 0,
-          depth: (settings.depth + (_dragging ? 0.045 : 0.02)).clamp(0.0, 1.0),
+          depth: (settings.depth + 0.02 + 0.025 * lift).clamp(0.0, 1.0),
           // Keep the backdrop locked to the finger; deepen the bevel on press.
           magnification: 1,
           shadowOpacity: enabled ? 0.16 : 0.04,
-          shadowBlur: _dragging ? 16 : 8,
+          shadowBlur: 8 + 8 * lift,
         );
         return SizedBox(
           width: width,
@@ -98,7 +106,9 @@ class _LiquidGlassSliderState extends State<LiquidGlassSlider> {
           child: LiquidGlassSurface(
             // The broad track needs one shared blur, not another refraction
             // pass. Reserve the optical lens for the moving thumb.
-            settings: settings.rendering == LiquidGlassRendering.automatic
+            settings:
+                (settings.rendering == LiquidGlassRendering.automatic ||
+                    settings.rendering == LiquidGlassRendering.balanced)
                 ? settings.copyWith(rendering: LiquidGlassRendering.frosted)
                 : settings,
             borderRadius: BorderRadius.circular(widget.height / 2),
@@ -169,42 +179,55 @@ class _LiquidGlassSliderState extends State<LiquidGlassSlider> {
                           curve: Curves.easeOutCubic,
                           width: thumbSize,
                           height: thumbSize,
-                          child: LiquidGlassSurface(
-                            key: const ValueKey('glass-slider-thumb'),
-                            settings: thumbSettings,
+                          child: LiquidGlassDynamics(
+                            enabled: enabled,
+                            pressed: _dragging,
+                            displacement: 0,
+                            intensity: settings.dynamicsIntensity,
+                            dragOffset: Offset(_dragDelta * (rtl ? -1 : 1), 0),
                             borderRadius: BorderRadius.circular(thumbSize / 2),
-                            child: Center(
-                              child: widget.thumbIcon != null
-                                  ? Icon(
-                                      widget.thumbIcon,
-                                      size: 22,
-                                      color: enabled
-                                          ? null
-                                          : Theme.of(context).disabledColor,
-                                    )
-                                  : Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        for (var line = 0; line < 2; line++)
-                                          Container(
-                                            width: 2,
-                                            height: 14,
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withValues(
-                                                    alpha: enabled ? 0.55 : 0.2,
+                            child: LiquidGlassSurface(
+                              key: const ValueKey('glass-slider-thumb'),
+                              settings: thumbSettings,
+                              borderRadius: BorderRadius.circular(
+                                thumbSize / 2,
+                              ),
+                              child: Center(
+                                child: widget.thumbIcon != null
+                                    ? Icon(
+                                        widget.thumbIcon,
+                                        size: 22,
+                                        color: enabled
+                                            ? null
+                                            : Theme.of(context).disabledColor,
+                                      )
+                                    : Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          for (var line = 0; line < 2; line++)
+                                            Container(
+                                              width: 2,
+                                              height: 14,
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 2,
                                                   ),
-                                              borderRadius:
-                                                  BorderRadius.circular(2),
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(
+                                                      alpha: enabled
+                                                          ? 0.55
+                                                          : 0.2,
+                                                    ),
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
+                                              ),
                                             ),
-                                          ),
-                                      ],
-                                    ),
+                                        ],
+                                      ),
+                              ),
                             ),
                           ),
                         ),
@@ -253,13 +276,19 @@ class _LiquidGlassSliderState extends State<LiquidGlassSlider> {
                         onChanged: widget.onChanged,
                         onChangeStart: enabled
                             ? (value) {
-                                setState(() => _dragging = true);
+                                setState(() {
+                                  _dragging = true;
+                                  _dragDelta = 0;
+                                });
                                 widget.onChangeStart?.call(value);
                               }
                             : null,
                         onChangeEnd: enabled
                             ? (value) {
-                                setState(() => _dragging = false);
+                                setState(() {
+                                  _dragging = false;
+                                  _dragDelta = 0;
+                                });
                                 widget.onChangeEnd?.call(value);
                               }
                             : null,

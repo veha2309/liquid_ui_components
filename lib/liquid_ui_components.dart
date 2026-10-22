@@ -8,6 +8,11 @@ import 'src/liquid_glass_surface.dart';
 
 export 'src/liquid_glass_surface.dart';
 export 'src/liquid_glass_controls.dart';
+export 'src/liquid_glass_morph.dart';
+export 'src/liquid_glass_blend.dart';
+export 'src/liquid_glass_dynamics.dart';
+export 'src/liquid_glass_toast.dart';
+export 'src/liquid_glass_scroll_edge.dart';
 export 'src/liquid_glass_scroll.dart' show LiquidGlassScrollBehavior;
 
 part 'src/liquid_glass_navigation_bar.dart';
@@ -56,7 +61,13 @@ class LiquidGlassNavigationBar extends StatelessWidget {
     this.unselectedColor,
     this.surfaceColor,
     this.glassSettings,
-  }) : items = List.unmodifiable(items) {
+    this.scrollController,
+    this.shrinkOnScroll = true,
+    this.collapseThreshold = 32,
+    this.expandThreshold = 8,
+  }) : items = List.unmodifiable(items),
+       assert(collapseThreshold > 0 && collapseThreshold < double.infinity),
+       assert(expandThreshold > 0 && expandThreshold < double.infinity) {
     if (items.length < 2 || items.length > 5) {
       throw ArgumentError.value(items.length, 'items.length', 'Use 2–5 tabs.');
     }
@@ -67,6 +78,10 @@ class LiquidGlassNavigationBar extends StatelessWidget {
 
   /// Layout height excluding the device's bottom safe area.
   static const double height = 96;
+
+  /// Compact layout height excluding the bottom safe area. Destinations retain
+  /// at least 48 logical pixels of height and keep accessible labels.
+  static const double compactHeight = 74;
 
   /// Destinations in logical reading order.
   final List<LiquidGlassNavigationItem> items;
@@ -94,6 +109,13 @@ class LiquidGlassNavigationBar extends StatelessWidget {
   /// Omitting both preserves the original navigation appearance.
   final LiquidGlassSettings? glassSettings;
 
+  /// The single vertical viewport that drives compact/expanded navigation.
+  /// Omit to retain the fixed expanded bar. The host owns this controller.
+  final ScrollController? scrollController;
+  final bool shrinkOnScroll;
+  final double collapseThreshold;
+  final double expandThreshold;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -106,6 +128,10 @@ class LiquidGlassNavigationBar extends StatelessWidget {
       unselectedColor: unselectedColor ?? colors.onSurfaceVariant,
       surfaceColor: surfaceColor ?? colors.surface,
       glassSettings: glassSettings ?? LiquidGlassTheme.maybeOf(context),
+      scrollController: scrollController,
+      shrinkOnScroll: shrinkOnScroll,
+      collapseThreshold: collapseThreshold,
+      expandThreshold: expandThreshold,
     );
   }
 }

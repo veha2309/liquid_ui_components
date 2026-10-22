@@ -1,10 +1,20 @@
 # Gallery performance check
 
+The v0.2.1 widget regression check now retains the morph's static panel paint
+once across 35 sampled animation frames (previously 30 repaints). Contour paths
+are shared between the rim, clip and shadow, blur filters are reused, and default
+material transitions keep blur/shadow kernel sizes stable. These are CPU/paint
+work reductions, not new device frame-time measurements.
+
+The profile driver now records `morph_static_background` and
+`morph_live_background` scenarios alongside scroll and volume. Run it on a target
+phone to measure raster costs; the historical timings below predate v0.2.1.
+
 Measured on the connected Samsung SM S721B (Android 16), using Flutter profile
 mode and native FrameTiming callbacks after a warm-up scroll. These are single
 runs, not a promise of sustained frame rates under all thermal/load conditions.
 
-| Scroll measurement | Full-refraction baseline | Optimized Balanced |
+| Scroll measurement | Full-refraction baseline | Historical frosted mode (then labelled Balanced) |
 | --- | ---: | ---: |
 | Recorded frames | 257 | 310 |
 | Average UI build | 2.25 ms | 0.99 ms |
@@ -12,9 +22,10 @@ runs, not a promise of sustained frame rates under all thermal/load conditions.
 | 90th percentile raster | 27.24 ms | 9.85 ms |
 | Raster frames above 16.67 ms | 137 | 0 |
 
-Balanced trades optical refraction for shared frosted blur on the gallery's
-surfaces. It retains translucency, tint, outlines and the backdrop artwork.
-Full refraction remains available from Glass quality.
+The historical Balanced label selected shared frosted blur in these runs. In
+v0.2.1, Balanced selects actual optical refraction with chromatic dispersion
+disabled; Frosted is the separate blur-only option. These timings do not measure
+the current Balanced renderer and should not be used as its performance claim.
 
 The optimized volume interaction recorded 276 frames: average UI build 1.89 ms,
 average raster 8.35 ms, and 6 raster frames above 16.67 ms. It does not maintain

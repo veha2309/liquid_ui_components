@@ -1,6 +1,6 @@
 name: liquid_ui_components
 description: Configurable liquid glass controls for Flutter with optical surfaces, buttons, toolbars, segments, sliders, switches and spring-animated navigation.
-version: 0.2.0
+version: 0.2.1
 repository: https://github.com/veha2309/liquid_ui_components
 issue_tracker: https://github.com/veha2309/liquid_ui_components/issues
 topics:
