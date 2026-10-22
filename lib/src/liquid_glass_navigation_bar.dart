@@ -1,4 +1,4 @@
-part of '../liquid_retina_navigation.dart';
+part of '../liquid_ui_components.dart';
 
 class _AndroidGlassBar extends StatefulWidget {
   const _AndroidGlassBar({
@@ -9,15 +9,17 @@ class _AndroidGlassBar extends StatefulWidget {
     required this.unselectedColor,
     required this.surfaceColor,
     this.onScrubChanged,
+    this.glassSettings,
   });
 
-  final List<LiquidRetinaNavigationItem> items;
+  final List<LiquidGlassNavigationItem> items;
   final int selectedIndex;
   final ValueChanged<int> onTap;
   final Color tintColor;
   final Color unselectedColor;
   final Color surfaceColor;
   final ValueChanged<double?>? onScrubChanged;
+  final LiquidGlassSettings? glassSettings;
 
   @override
   State<_AndroidGlassBar> createState() => _AndroidGlassBarState();
@@ -191,7 +193,7 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
         child: SizedBox(
-          height: LiquidRetinaNavigationBar.height - 34,
+          height: LiquidGlassNavigationBar.height - 34,
           child: LayoutBuilder(
             builder: (context, constraints) {
               _width = constraints.maxWidth - 10;
@@ -292,16 +294,17 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
             ),
           ),
         ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: ExcludeSemantics(
-              child: Padding(
-                padding: const EdgeInsets.all(5),
-                child: _destinations(position, lift, dark, iconsOnly: true),
+        if (widget.glassSettings == null)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: ExcludeSemantics(
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: _destinations(position, lift, dark, iconsOnly: true),
+                ),
               ),
             ),
           ),
-        ),
         Positioned(
           left: 5 + center * _width - selectorWidth / 2,
           // Lift the expanded capsule out of the surface, with room in the outer padding.
@@ -338,6 +341,29 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
     double lift = 0,
   }) {
     final radius = selector ? 29.0 : 30.0;
+    if (widget.glassSettings != null) {
+      final config = widget.glassSettings!;
+      return LiquidGlassSurface(
+        settings: selector
+            ? config.copyWith(
+                variant: LiquidGlassVariant.clear,
+                tintColor:
+                    highContrast ||
+                        config.reduceTransparency ||
+                        config.rendering == LiquidGlassRendering.solid
+                    ? config.tintColor ?? widget.surfaceColor
+                    : widget.tintColor,
+                opacity: highContrast ? 0.20 : 0.07 * (1 - lift),
+                blur: 0,
+                depth: (config.depth * (1 + 2 * lift)).clamp(0.0, 1.0),
+                magnification: config.magnification + 0.12 * lift,
+                shadowOpacity: 0,
+              )
+            : config,
+        borderRadius: BorderRadius.circular(radius),
+        child: const SizedBox.expand(),
+      );
+    }
     final tint = selector
         ? widget.tintColor.withValues(
             alpha: highContrast ? 0.20 : 0.07 * (1 - lift),
@@ -430,7 +456,7 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
         final item = widget.items[index];
         final active = index == preview;
         final color = active ? widget.tintColor : widget.unselectedColor;
-        final icon = iconsOnly
+        final icon = iconsOnly || widget.glassSettings != null
             ? Icon(item.icon, size: 23, color: color)
             : const SizedBox(width: 23, height: 23);
         final proximity = (1 - (position - index).abs()).clamp(0.0, 1.0);
@@ -446,7 +472,8 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  item.badge == null || !iconsOnly
+                  item.badge == null ||
+                          (!iconsOnly && widget.glassSettings == null)
                       ? icon
                       : Badge(label: Text(item.badge!), child: icon),
                   const SizedBox(height: 3),

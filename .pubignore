@@ -6,3 +6,15 @@ pubspec.lock
 example/.dart_tool/
 example/build/
 example/pubspec.lock
+.idea/
+.vscode/
+**/*.iml
+example/.idea/
+example/android/.gradle/
+example/android/local.properties
+example/android/key.properties
+example/android/gradlew
+example/android/gradlew.bat
+example/android/gradle/wrapper/gradle-wrapper.jar
+**/*.jks
+**/*.keystore

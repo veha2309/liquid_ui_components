@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:liquid_retina_navigation/liquid_retina_navigation.dart';
+import 'package:liquid_ui_components/liquid_ui_components.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 const tabs = [
-  LiquidRetinaNavigationItem(label: 'Home', icon: Icons.home),
-  LiquidRetinaNavigationItem(label: 'Chats', icon: Icons.chat),
+  LiquidGlassNavigationItem(label: 'Home', icon: Icons.home),
+  LiquidGlassNavigationItem(label: 'Chats', icon: Icons.chat),
 ];
 void main() {
   testWidgets(
@@ -25,7 +25,7 @@ void main() {
             onSurfaceVariant: Colors.cyan,
             surface: Colors.blueGrey,
           );
-      final bar = LiquidRetinaNavigationBar(
+      final bar = LiquidGlassNavigationBar(
         items: tabs,
         selectedIndex: 0,
         onTap: (_) {},
@@ -70,7 +70,7 @@ void main() {
       await tester.pumpWidget(
         app(
           dark,
-          LiquidRetinaNavigationBar(
+          LiquidGlassNavigationBar(
             items: tabs,
             selectedIndex: 0,
             onTap: (_) {},
@@ -92,11 +92,11 @@ void main() {
   test('rejects invalid tab configuration', () {
     expect(
       () =>
-          LiquidRetinaNavigationBar(items: [], selectedIndex: 0, onTap: (_) {}),
+          LiquidGlassNavigationBar(items: [], selectedIndex: 0, onTap: (_) {}),
       throwsArgumentError,
     );
     expect(
-      () => LiquidRetinaNavigationBar(
+      () => LiquidGlassNavigationBar(
         items: tabs,
         selectedIndex: 2,
         onTap: (_) {},
@@ -110,7 +110,7 @@ void main() {
     int? tapped;
     Widget app(int index) => MaterialApp(
       home: Scaffold(
-        bottomNavigationBar: LiquidRetinaNavigationBar(
+        bottomNavigationBar: LiquidGlassNavigationBar(
           items: tabs,
           selectedIndex: index,
           onTap: (value) => tapped = value,
@@ -155,16 +155,16 @@ void main() {
             textDirection: TextDirection.rtl,
             child: Scaffold(
               extendBody: true,
-              bottomNavigationBar: LiquidRetinaNavigationBar(
+              bottomNavigationBar: LiquidGlassNavigationBar(
                 items: const [
                   ...tabs,
-                  LiquidRetinaNavigationItem(
+                  LiquidGlassNavigationItem(
                     label: 'Collections',
                     icon: Icons.museum,
                     badge: '8',
                   ),
-                  LiquidRetinaNavigationItem(label: 'Tours', icon: Icons.route),
-                  LiquidRetinaNavigationItem(
+                  LiquidGlassNavigationItem(label: 'Tours', icon: Icons.route),
+                  LiquidGlassNavigationItem(
                     label: 'Profile',
                     icon: Icons.person,
                   ),
@@ -184,8 +184,8 @@ void main() {
       tester.getCenter(find.text('Collections')).dx,
     );
     expect(
-      tester.getSize(find.byType(LiquidRetinaNavigationBar)).height,
-      LiquidRetinaNavigationBar.height + 24,
+      tester.getSize(find.byType(LiquidGlassNavigationBar)).height,
+      LiquidGlassNavigationBar.height + 24,
     );
   }, variant: TargetPlatformVariant({TargetPlatform.android}));
   testWidgets(
@@ -195,7 +195,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            bottomNavigationBar: LiquidRetinaNavigationBar(
+            bottomNavigationBar: LiquidGlassNavigationBar(
               items: tabs,
               selectedIndex: 0,
               onTap: taps.add,
@@ -243,7 +243,7 @@ void main() {
         home: Directionality(
           textDirection: TextDirection.rtl,
           child: Scaffold(
-            bottomNavigationBar: LiquidRetinaNavigationBar(
+            bottomNavigationBar: LiquidGlassNavigationBar(
               items: tabs,
               selectedIndex: 0,
               onTap: taps.add,
