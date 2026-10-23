@@ -118,7 +118,7 @@ class _ActivityPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (size.isEmpty) return;
+    if (!size.isFinite || size.isEmpty) return;
     canvas.save();
     canvas.clipRect(Offset.zero & size);
     final scale = size.width / 390;
@@ -203,6 +203,7 @@ class _BackdropPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (!size.isFinite || size.isEmpty) return;
     canvas.save();
     canvas.clipRect(Offset.zero & size);
     final scale = size.width / 390;

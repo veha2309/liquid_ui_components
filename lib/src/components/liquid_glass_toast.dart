@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'liquid_glass_dynamics.dart';
-import 'liquid_glass_surface.dart';
+import '../motion/liquid_glass_dynamics.dart';
+import '../surfaces/liquid_glass_surface.dart';
 
 /// A floating glass notification managed by Flutter's [ScaffoldMessenger].
 ///

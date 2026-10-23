@@ -1,9 +1,10 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-// Inspect the renderer owned by liquid_ui_components without making the
-// example's public API depend on the optical implementation.
-// ignore: depend_on_referenced_packages
-import 'package:liquid_glass_easy/liquid_glass_easy.dart' as optical;
+// Internal checks belong in integration tests, never in the example UI.
+// ignore: implementation_imports
+import 'package:liquid_ui_components/src/rendering/glass_backdrop.dart';
+// ignore: implementation_imports
+import 'package:liquid_ui_components/src/rendering/stable_glass_backdrop.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:liquid_ui_components_example/main.dart';
@@ -41,16 +42,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 1));
-    final blender = tester.widget<optical.LiquidGlassBlender>(
-      find.byType(optical.LiquidGlassBlender),
-    );
-    expect(blender.style.refraction.chromaticAberration, 0);
-    expect(
-      (blender.style.refraction.refractionType as optical.OpticalRefraction)
-          .depth,
-      greaterThan(0),
-    );
-    expect(blender.style.appearance.blur.sigmaX, 2);
+    final blender = tester.widget<GlassBackdrop>(find.byType(GlassBackdrop));
+    expect(blender.settings.rendering, LiquidGlassRendering.balanced);
+    expect(blender.settings.depth, greaterThan(0));
+    expect(blender.settings.blur, 2);
     await binding.convertFlutterSurfaceToImage();
     await tester.pump();
     await binding.takeScreenshot('blend-balanced-separated');
@@ -67,7 +62,7 @@ void main() {
       'BLEND shader filters supported: ${ui.ImageFilter.isShaderFilterSupported}',
     );
     await ui.FragmentProgram.fromAsset(
-      'packages/liquid_glass_easy/lib/assets/shaders/metaball_glass.frag',
+      'packages/liquid_ui_components/shaders/liquid_glass.frag',
     );
     await tester.pumpWidget(const GlassGallery(animateBackground: false));
     await tester.pumpAndSettle();
@@ -75,34 +70,19 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 2));
     void expectFixedDiameter() {
-      final lenses = find.descendant(
-        of: find.byType(Dialog),
-        matching: find.byType(optical.LiquidGlassLens),
-      );
-      expect(lenses, findsNWidgets(2));
-      for (final element in lenses.evaluate()) {
-        final box = element.findRenderObject()! as RenderBox;
-        final rect = MatrixUtils.transformRect(
-          box.getTransformTo(null),
-          Offset.zero & box.size,
-        );
-        expect(rect.width, closeTo(84, 0.1));
-        expect(rect.height, closeTo(84, 0.1));
+      final pass = tester.widget<StableBlendPass>(find.byType(StableBlendPass));
+      expect(pass.bounds.length, 4);
+      for (final bounds in pass.bounds) {
+        expect(bounds.size, const Size(68, 68));
       }
     }
 
     expectFixedDiameter();
-    optical.LiquidGlassStyle currentStyle() => tester
-        .widget<optical.LiquidGlassBlender>(
-          find.descendant(
-            of: find.byType(Dialog),
-            matching: find.byType(optical.LiquidGlassBlender),
-          ),
-        )
-        .style;
+    LiquidGlassSettings currentStyle() =>
+        tester.widget<StableBlendPass>(find.byType(StableBlendPass)).settings;
     final initialStyle = currentStyle();
-    expect(initialStyle.appearance.blur.sigmaX, 8);
-    expect(initialStyle.appearance.color.a, closeTo(0.3, 0.01));
+    expect(initialStyle.blur, 8);
+    expect(initialStyle.opacity, closeTo(0.3, 0.01));
     final viscositySlider = find.descendant(
       of: find.byType(Dialog),
       matching: find.byType(Slider),
@@ -110,22 +90,13 @@ void main() {
     tester.widget<Slider>(viscositySlider).onChanged!(1);
     await tester.pumpAndSettle();
     final thickStyle = currentStyle();
-    expect(
-      (thickStyle.refraction.refractionType as optical.OpticalRefraction).depth,
-      greaterThan(
-        (initialStyle.refraction.refractionType as optical.OpticalRefraction)
-            .depth,
-      ),
-    );
-    expect(thickStyle.appearance.blur.sigmaX, 8);
-    expect(thickStyle.appearance.color.a, closeTo(0.3, 0.01));
+    expect(thickStyle.depth, greaterThan(initialStyle.depth));
+    expect(thickStyle.blur, 8);
+    expect(thickStyle.opacity, closeTo(0.3, 0.01));
     await binding.convertFlutterSurfaceToImage();
     await tester.pump();
     await binding.takeScreenshot('blend-before');
-    final lens = find.descendant(
-      of: find.byType(Dialog),
-      matching: find.byKey(const ValueKey('blend-drag-0')),
-    );
+    final lens = find.byTooltip('Blend action 1');
     await tester.drag(lens, const Offset(55, 20));
     await tester.pumpAndSettle();
     expectFixedDiameter();

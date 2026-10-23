@@ -23,17 +23,19 @@ void main() {
       await tester.pumpWidget(host(3, 0.12));
       await tester.pumpAndSettle();
       LiquidGlassBlend blend() => tester
-          .widgetList<LiquidGlassBlend>(find.byType(LiquidGlassBlend))
-          .firstWhere((b) => b.playgroundSize != null);
+          .widgetList<LiquidGlassBlend>(
+            find.byWidgetPredicate((w) => w is LiquidGlassBlend),
+          )
+          .first;
       expect(blend().settings!.blur, 3);
       expect(blend().settings!.opacity, 0.12);
-      final drag = find.byKey(const ValueKey('blend-drag-0'));
+      final drag = find.byTooltip('Blend action 1');
       await tester.drag(drag, const Offset(25, 25));
       await tester.pumpAndSettle();
       final position = tester.getCenter(drag);
       tester.widget<Slider>(find.byType(Slider)).onChanged!(0.9);
       await tester.pumpAndSettle();
-      expect(blend().viscosity, 0.9);
+      expect(blend().settings!.depth, closeTo(0.22 * 1.4, 0.0001));
       expect(blend().settings!.blur, 3);
       await tester.pumpWidget(host(12, 0.7));
       await tester.pumpAndSettle();
@@ -117,7 +119,9 @@ void main() {
     expect(tester.getCenter(second).dy, lessThan(secondStart.dy - 10));
     await tester.tap(find.byIcon(Icons.pause));
     expect(taps, 1);
-    final arena = tester.getRect(find.byType(LiquidGlassBlend).first);
+    final arena = tester.getRect(
+      find.byWidgetPredicate((w) => w is LiquidGlassBlend).first,
+    );
     await tester.drag(first, const Offset(-1000, -1000));
     await tester.pumpAndSettle();
     expect(arena.contains(tester.getCenter(first)), isTrue);
@@ -152,7 +156,10 @@ void main() {
         find.byType(LiquidGlassSurface),
       );
       return surface.shape!.getOuterPath(
-        Offset.zero & tester.getSize(find.byType(LiquidGlassBlend)),
+        Offset.zero &
+            tester.getSize(
+              find.byWidgetPredicate((w) => w is LiquidGlassBlend),
+            ),
       );
     }
 

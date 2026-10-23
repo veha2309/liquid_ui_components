@@ -1,7 +1,8 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_ui_components/liquid_ui_components.dart';
-import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 const tabs = [
   LiquidGlassNavigationItem(label: 'Home', icon: Icons.home),
@@ -270,9 +271,12 @@ void main() {
   testWidgets('optical renderer shaders compile and can be instantiated', (
     tester,
   ) async {
-    await LiquidGlassShaders.ensureLoaded(false);
-    expect(LiquidGlassShaders.isLoadedFor(false), isTrue);
-    LiquidGlassShaders.createMainShader(false).dispose();
-    LiquidGlassShaders.createBorderShader(false).dispose();
+    final program = await ui.FragmentProgram.fromAsset(
+      'shaders/liquid_glass.frag',
+    );
+    final shader = program.fragmentShader();
+    // Exercise the complete float ABI, including the blend geometry tail.
+    shader.setFloat(40, 0);
+    shader.dispose();
   });
 }

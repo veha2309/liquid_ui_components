@@ -33,7 +33,8 @@ class _GlassGalleryState extends State<GlassGallery> {
   bool collectionSaved = false;
   bool morphExpanded = false;
   bool backgroundMotion = true;
-  LiquidGlassRendering rendering = LiquidGlassRendering.automatic;
+  // Keep the demo usable while native refraction is under device validation.
+  LiquidGlassRendering rendering = LiquidGlassRendering.frosted;
 
   @override
   void dispose() {
@@ -66,6 +67,11 @@ class _GlassGalleryState extends State<GlassGallery> {
         builder: (context) => Scaffold(
           extendBody: true,
           appBar: AppBar(
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.surface.withValues(alpha: 1),
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
             title: const Text('Liquid Glass Studio'),
             actions: [
               TextButton(
@@ -430,12 +436,25 @@ class _GlassGalleryState extends State<GlassGallery> {
                                 ),
                               ],
                             ),
-                            SwitchListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: const Text('Reduce transparency'),
-                              value: reduceTransparency,
-                              onChanged: (value) =>
-                                  setState(() => reduceTransparency = value),
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => setState(
+                                () => reduceTransparency = !reduceTransparency,
+                              ),
+                              child: Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text('Reduce transparency'),
+                                  ),
+                                  LiquidGlassSwitch(
+                                    value: reduceTransparency,
+                                    semanticLabel: 'Reduce transparency',
+                                    onChanged: (value) => setState(
+                                      () => reduceTransparency = value,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             DropdownButtonFormField<LiquidGlassRendering>(
                               initialValue: rendering,
@@ -463,7 +482,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                             ),
                             const SizedBox(height: 16),
                             Text('Blur ${blur.round()}'),
-                            Slider(
+                            LiquidGlassSlider(
                               value: blur,
                               min: 0,
                               max: 24,
@@ -472,7 +491,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                                   : (value) => setState(() => blur = value),
                             ),
                             Text('Tint opacity ${(opacity * 100).round()}%'),
-                            Slider(
+                            LiquidGlassSlider(
                               value: opacity,
                               min: 0,
                               max: 1,
@@ -481,7 +500,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                                   : (value) => setState(() => opacity = value),
                             ),
                             Text('Rim light ${lightDirection.round()}°'),
-                            Slider(
+                            LiquidGlassSlider(
                               value: lightDirection,
                               min: 0,
                               max: 360,
@@ -491,7 +510,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                             Text(
                               'Optical edge width ${edgeWidth.toStringAsFixed(1)}',
                             ),
-                            Slider(
+                            LiquidGlassSlider(
                               value: edgeWidth,
                               min: 0,
                               max: 16,

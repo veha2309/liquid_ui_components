@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'liquid_glass_surface.dart';
+import '../surfaces/liquid_glass_surface.dart';
 
 /// Soft fades suit floating controls; hard edges suit pinned toolbar content.
 enum LiquidGlassScrollEdgeStyle { soft, hard }

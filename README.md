@@ -49,16 +49,26 @@ segmented selectors, sliders, switches, toolbars and bottom navigation.
 - Reduced-motion and high-contrast adaptations, plus a Reduce Transparency bridge.
 - Shared frosted blur passes for nonoverlapping surfaces.
 
-Requires **Flutter 3.44+** and **Dart 3.12.2+**. The optical renderer is
-[`liquid_glass_easy`](https://pub.dev/packages/liquid_glass_easy) (`^3.3.1`).
+Requires **Flutter 3.44+** and **Dart 3.12.2+**. The v0.3.0 development branch
+uses the device-tested optical renderer through an internal adapter by default.
+The package-owned Impeller shader is experimental and explicitly opt-in.
+See [Architecture](ARCHITECTURE.md) for module boundaries and validation status.
 This is a Flutter-rendered interpretation of liquid glass, not UIKit's native
 material. No native iOS framework or platform plugin is required.
 
-Android is the declared and device-tested platform. The rendering code is pure
+Android is the declared platform. v0.2.1 was device-tested; the new v0.3.0
+renderer still requires visual and performance checks on an Impeller device. The rendering code is pure
 Flutter and has a frosted fallback, but iOS, desktop and web have not been
 validated by this package. The example includes an Android runner.
 
 ## Choosing a rendering mode
+
+The v0.3.0 gallery temporarily starts in **Frosted** after phone testing exposed
+native-renderer flicker and optical frame-time spikes. This keeps blur, tint and
+rims; it does not refract the backdrop. Full refraction and Balanced remain
+available in Glass quality. The package settings default is unchanged. The
+native prototype requires `renderer: LiquidGlassRenderer.experimentalNative`.
+
 
 Set `LiquidGlassSettings.rendering` globally with `LiquidGlassTheme`, or on a
 single component through its `settings` parameter. The gallery's **Glass quality**
@@ -133,7 +143,8 @@ visible detail to distort.
 
 ## Installation
 
-This README describes version `0.2.1`, including the new blending, viscosity and
+This checkout targets unreleased `0.3.0-dev.1`; the published install below is
+for stable `0.2.1`. It includes the blending, viscosity and
 Balanced-mode APIs. Until that version is published to pub.dev, use a local
 dependency to try this repository checkout:
 
@@ -602,7 +613,7 @@ LiquidGlassSlider(
 | `semanticLabel` | `null` | Screen-reader description |
 | `onChangeStart` / `onChangeEnd` | `null` | Start/end callbacks for committing or previewing changes |
 | `settings` | Inherited | Material and press transition duration |
-| `height` | 64 | Logical pixels; finite and at least 56 |
+| `height` | 48 | Interaction height in logical pixels; finite and at least 48 |
 | `activeColor` | Theme primary | Filled track color |
 | `thumbIcon` | `null` | Optional glyph; a grip is shown when omitted |
 
@@ -1214,5 +1225,64 @@ Use glass sparingly for functional controls and verify legibility over real
 content. Web reference features such as expandable/draggable cards aren't part
 of this API.
 
-Released under the [MIT license](LICENSE). The optical renderer has its own
-[license](https://pub.dev/packages/liquid_glass_easy/license).
+Released under the [MIT license](LICENSE), including the experimental shader.
+The stable renderer retains its [own license](https://pub.dev/packages/liquid_glass_easy/license).
+
+
+### Builder-based blend members (v0.3.0)
+
+Use `LiquidGlassBlend.builder` for any number of positioned widgets, including
+buttons, action lists or panels. `itemBuilder` returns a `LiquidGlassBlendItem`
+with finite nonempty `bounds`, a corner radius and any `child`. Bounds provide the initial layout. Each member is draggable within the arena;
+positions are retained internally. Supply a stable `key` on each item to preserve
+its position across reordering. Oversized items remain clipped to the arena.
+`LiquidGlassBlend.items(items: ..., size: ...)` accepts the same models directly.
+The existing two-member constructors remain supported.
+
+```dart
+LiquidGlassBlend.builder(
+  size: const Size(360, 160),
+  itemCount: actions.length,
+  itemBuilder: (context, index) => LiquidGlassBlendItem(
+    bounds: Rect.fromLTWH(index * 72.0, 20, 68, 100),
+    borderRadius: 24,
+    child: actions[index],
+  ),
+)
+```
+
+There is no API count limit. All members share a smooth liquid contour in
+Frosted mode. Up to six members use the stable per-member optical blending
+shader; larger groups use a shared contour and surface lens so members can
+merge across the former group boundary. Larger groups have whole-surface
+refraction rather than independent refraction around every member. The builder uses
+that stable adapter even when the experimental native backend is selected,
+because the prototype only supports two shapes. Frosted/solid modes draw the shared smooth outline, including necks between
+nearby members; they do not refract the backdrop. Keep large lists bounded
+or paginated: all builder items are built eagerly and optical cost grows with
+item count. The demo offers add/remove controls and mixed corner radii.
+
+
+The v0.3.0 slider and toggle use slim tracks (about 28 logical pixels) inside
+48-pixel-high touch targets. Slider thumbs rest at 28 pixels, toggle thumbs at
+24 pixels. Holding expands them to 40 and 32 pixels respectively at full dynamics
+intensity and increases lens magnification by up to 18%. The small held thumb
+uses Balanced optics even when the surrounding track uses Frosted; it restores
+the selected mode on release. Solid mode, reduced transparency, high contrast,
+reduced motion and zero dynamics intensity retain their adaptations.
+
+The switch track is a compact 52 × 28 capsule inside a 60 × 48 touch region.
+Its thumb expands around a fixed endpoint center; the track does not scale on hold.
+
+Switch hold feedback cancels as soon as a vertical scroll takes over, before
+finger-up; it does not toggle the value. Stable optical lenses invalidate their
+paint before an enclosing scroll moves retained layers. The phone regression
+is `example/integration_test/glass_switch_scroll_test.dart`.
+
+
+`LiquidGlassSurface` paints shadows outside its outline, after capturing the
+glass backdrop. This prevents a surface's own shadow from darkening its glass
+when a shared capture changes during scrolling. Controls, custom shapes, panels,
+navigation and optical blends use this shared shadow handling; no per-panel
+`BackdropGroup` wrapper is needed. Nonoverlapping siblings can still share blur.
+Overlapping surfaces need separate backdrop groups.

@@ -60,7 +60,7 @@ void main() {
     );
     final lens = find.descendant(
       of: find.byType(Dialog),
-      matching: find.byKey(const ValueKey('blend-drag-0')),
+      matching: find.byTooltip('Blend action 1'),
     );
     await tester.drag(lens, const Offset(30, 30));
     await tester.pumpAndSettle();
@@ -111,7 +111,7 @@ void main() {
     final navigation = tester.element(find.byType(LiquidGlassNavigationBar));
     expect(
       LiquidGlassTheme.of(navigation).rendering,
-      LiquidGlassRendering.automatic,
+      LiquidGlassRendering.frosted,
     );
 
     Future<void> capture(String name) async {

@@ -3,8 +3,14 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:liquid_glass_easy/liquid_glass_easy.dart' as optical;
-import 'liquid_glass_surface.dart';
+import '../rendering/glass_backdrop.dart';
+import '../rendering/stable_glass_backdrop.dart';
+import '../surfaces/liquid_glass_surface.dart';
+import '../surfaces/glass_shadow_decoration.dart';
+
+part 'blend_geometry.dart';
+part 'blend_items.dart';
+part 'blend_items_outline.dart';
 
 /// Two circular controls that fuse into one refractive liquid surface.
 ///
@@ -14,6 +20,36 @@ import 'liquid_glass_surface.dart';
 /// Other engines use a matching frosted silhouette. Children keep their own
 /// actions and semantics; glass is decorative and does not handle gestures.
 class LiquidGlassBlend extends StatelessWidget {
+  /// Builds any number of positioned actions, controls or panels.
+  /// All items share a liquid contour; up to six use per-member optical fusion.
+  factory LiquidGlassBlend.builder({
+    Key? key,
+    required int itemCount,
+    required LiquidGlassBlendItem Function(BuildContext, int) itemBuilder,
+    required Size size,
+    double smoothness,
+    LiquidGlassSettings? settings,
+  }) = _ItemGlassBlend;
+
+  /// Uses a list of independently draggable members in a bounded arena.
+  factory LiquidGlassBlend.items({
+    Key? key,
+    required List<LiquidGlassBlendItem> items,
+    required Size size,
+    double smoothness = 40,
+    LiquidGlassSettings? settings,
+  }) {
+    final snapshot = List<LiquidGlassBlendItem>.unmodifiable(items);
+    return LiquidGlassBlend.builder(
+      key: key,
+      size: size,
+      itemCount: snapshot.length,
+      smoothness: smoothness,
+      settings: settings,
+      itemBuilder: (_, index) => snapshot[index],
+    );
+  }
+
   const LiquidGlassBlend({
     super.key,
     required this.first,
@@ -116,43 +152,6 @@ class LiquidGlassBlend extends StatelessWidget {
     final foreground = config.foregroundColor ?? theme.colorScheme.onSurface;
     final edges = config.resolveEdgeOptics(Size.square(radius * 2));
     final lensStrength = viscosity * 2;
-    final style = optical.LiquidGlassStyle(
-      shape: optical.LiquidGlassShape.roundedRectangle(
-        cornerRadius: radius,
-        borderWidth: config.borderWidth,
-        lightIntensity: config.lightIntensity,
-        lightDirection: config.lightDirection % 360,
-        borderType: optical.OpticalBorder(
-          ambientIntensity: config.edgeAmbientIntensity,
-          lightSpread: config.edgeLightSpread,
-        ),
-      ),
-      appearance: optical.LiquidGlassAppearance(
-        color: tint,
-        saturation: config.saturation,
-        blur: optical.LiquidGlassBlur(sigmaX: config.blur, sigmaY: config.blur),
-      ),
-      refraction: optical.LiquidGlassRefraction(
-        magnification: math.max(
-          0.01,
-          1 + (config.magnification - 1) * lensStrength,
-        ),
-        chromaticAberration: config.rendering == LiquidGlassRendering.balanced
-            ? 0
-            : config.chromaticAberration,
-        refractionType: optical.OpticalRefraction(
-          refraction: 1 + (config.refraction - 1) * lensStrength,
-          refractionWidth: edges.refractionWidth,
-          depth: (edges.depth * lensStrength).clamp(0.0, 1.0),
-        ),
-      ),
-    );
-    Widget member(Widget child) => opticalEnabled
-        ? optical.LiquidGlassLens(
-            style: style,
-            child: Center(child: child),
-          )
-        : Center(child: child);
     final members = SizedBox(
       width: _canvasSize?.width ?? separation + radius * 2,
       height: _canvasSize?.height ?? radius * 2,
@@ -164,42 +163,70 @@ class LiquidGlassBlend extends StatelessWidget {
             top: (_firstCenter?.dy ?? radius) - radius,
             width: radius * 2,
             height: radius * 2,
-            child: member(first),
+            child: Center(child: first),
           ),
           Positioned(
             left: (_secondCenter?.dx ?? separation + radius) - radius,
             top: (_secondCenter?.dy ?? radius) - radius,
             width: radius * 2,
             height: radius * 2,
-            child: member(second),
+            child: Center(child: second),
           ),
         ],
       ),
     );
-    final surface = opticalEnabled
-        ? optical.LiquidGlassBlender(
-            style: style,
+    final outline = _firstCenter == null
+        ? _BlendedLenses(
+            distance: separation,
+            radius: radius,
             smoothness: blendWidth,
-            // The composed engine-blur path loses the merged field on the
-            // Android device under transformed/clipped play areas. Keep blur
-            // in the metaball shader so its sampling coordinates stay global.
-            useEngineBlur: false,
-            child: members,
+          )
+        : _PositionedBlendBorder(
+            first: _firstCenter,
+            second: _secondCenter!,
+            radius: radius,
+            smoothness: blendWidth,
+          );
+    final surface = opticalEnabled
+        ? GlassShadow(
+            shape: outline,
+            shadow: BoxShadow(
+              color: Colors.black.withValues(alpha: config.shadowOpacity),
+              blurRadius: config.shadowBlur,
+              offset: const Offset(0, 5),
+            ),
+            child: ClipPath(
+              clipper: ShapeBorderClipper(shape: outline),
+              child: GlassBackdrop(
+                settings: config.copyWith(
+                  refraction: 1 + (config.refraction - 1) * lensStrength,
+                  depth: (edges.depth * lensStrength).clamp(0.0, 1.0),
+                  magnification: math.max(
+                    0.01,
+                    1 + (config.magnification - 1) * lensStrength,
+                  ),
+                  refractionWidth: edges.refractionWidth,
+                  scaleRefractionWithSize: false,
+                ),
+                tint: tint,
+                blendMembers: [first, second],
+                blendSize: Size(
+                  _canvasSize?.width ?? separation + radius * 2,
+                  _canvasSize?.height ?? radius * 2,
+                ),
+                blend: GlassBlendGeometry(
+                  first: _firstCenter ?? Offset(radius, radius),
+                  second: _secondCenter ?? Offset(separation + radius, radius),
+                  radius: radius,
+                  smoothness: blendWidth,
+                ),
+                child: members,
+              ),
+            ),
           )
         : LiquidGlassSurface(
             settings: config.copyWith(animationDuration: Duration.zero),
-            shape: _firstCenter == null
-                ? _BlendedLenses(
-                    distance: separation,
-                    radius: radius,
-                    smoothness: blendWidth,
-                  )
-                : _PositionedBlendBorder(
-                    first: _firstCenter,
-                    second: _secondCenter!,
-                    radius: radius,
-                    smoothness: blendWidth,
-                  ),
+            shape: outline,
             child: members,
           );
     return IconTheme.merge(
@@ -319,173 +346,3 @@ class _DraggableBlendState extends State<_DraggableBlend> {
 /// Rotate only the fallback path, never the optical member boxes. Rotating
 /// a circular member's square box inflates its screen-space bounds and makes
 /// the shader interpret diagonal placement as a larger droplet.
-class _PositionedBlendBorder extends OutlinedBorder {
-  const _PositionedBlendBorder({
-    required this.first,
-    required this.second,
-    required this.radius,
-    required this.smoothness,
-    super.side,
-  });
-  final Offset first;
-  final Offset second;
-  final double radius;
-  final double smoothness;
-
-  @override
-  EdgeInsetsGeometry get dimensions => EdgeInsets.all(side.width);
-  @override
-  _PositionedBlendBorder copyWith({BorderSide? side}) => _PositionedBlendBorder(
-    first: first,
-    second: second,
-    radius: radius,
-    smoothness: smoothness,
-    side: side ?? this.side,
-  );
-  @override
-  ShapeBorder scale(double t) => _PositionedBlendBorder(
-    first: first * t,
-    second: second * t,
-    radius: radius * t,
-    smoothness: smoothness * t,
-    side: side.scale(t),
-  );
-  Path _path(Rect rect, double inset) {
-    final delta = second - first;
-    final r = math.max(0.0, radius - inset);
-    final local = _BlendedLenses(
-      distance: delta.distance,
-      radius: r,
-      smoothness: smoothness,
-    ).getOuterPath(Rect.fromLTWH(0, 0, delta.distance + r * 2, r * 2));
-    final transform =
-        Matrix4.translationValues(rect.left + first.dx, rect.top + first.dy, 0)
-          ..rotateZ(math.atan2(delta.dy, delta.dx))
-          ..translateByDouble(-r, -r, 0, 1);
-    return local.transform(transform.storage);
-  }
-
-  @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
-      _path(rect, 0);
-  @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
-      _path(rect, side.width);
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    if (side.style != BorderStyle.none && side.width > 0) {
-      canvas.drawPath(_path(rect, side.width / 2), side.toPaint());
-    }
-  }
-}
-
-class _BlendedLenses extends OutlinedBorder {
-  _BlendedLenses({
-    required this.distance,
-    required this.radius,
-    required this.smoothness,
-    super.side,
-  });
-  final double distance;
-  final double radius;
-  final double smoothness;
-  final _paths = <Rect, Path>{};
-
-  @override
-  EdgeInsetsGeometry get dimensions => EdgeInsets.all(side.width);
-
-  @override
-  _BlendedLenses copyWith({BorderSide? side}) => _BlendedLenses(
-    distance: distance,
-    radius: radius,
-    smoothness: smoothness,
-    side: side ?? this.side,
-  );
-
-  @override
-  ShapeBorder scale(double t) => _BlendedLenses(
-    distance: distance * t,
-    radius: radius * t,
-    smoothness: smoothness * t,
-    side: side.scale(t),
-  );
-
-  Path _outline(Rect rect) =>
-      _paths.putIfAbsent(rect, () => _buildOutline(rect));
-
-  Path _buildOutline(Rect rect) {
-    final r = math.min(radius, rect.height / 2);
-    if (r <= 0 || rect.isEmpty) return Path();
-    final left = rect.left + r;
-    final right = rect.right - r;
-    final cy = rect.center.dy;
-    final smoothing = smoothness;
-    // A smooth union defines one continuous liquid field. Unlike a separate
-    // bridge patch, its neck cannot cross itself or leave an isolated island.
-    double field(double x, double y) {
-      final a = math.sqrt((x - left) * (x - left) + y * y) - r;
-      final b = math.sqrt((x - right) * (x - right) + y * y) - r;
-      final h = math.max(smoothing - (a - b).abs(), 0) / smoothing;
-      return math.min(a, b) - h * h * smoothing * 0.25;
-    }
-
-    final path = Path();
-    final top = <Offset>[];
-    final bottom = <Offset>[];
-    void finish() {
-      if (top.length > 1) {
-        path.moveTo(top.first.dx, top.first.dy);
-        for (final point in top.skip(1)) {
-          path.lineTo(point.dx, point.dy);
-        }
-        for (final point in bottom.reversed) {
-          path.lineTo(point.dx, point.dy);
-        }
-        path.close();
-      }
-      top.clear();
-      bottom.clear();
-    }
-
-    // Solve the upper and lower field boundaries; symmetry makes the vertical
-    // root monotonic. Separate runs naturally become two drops after rupture.
-    const samples = 192;
-    for (var i = 0; i <= samples; i++) {
-      final x = rect.left + rect.width * i / samples;
-      if (field(x, 0) > 0) {
-        finish();
-        continue;
-      }
-      var low = 0.0;
-      var high = r * 1.3;
-      for (var j = 0; j < 16; j++) {
-        final mid = (low + high) / 2;
-        if (field(x, mid) < 0) {
-          low = mid;
-        } else {
-          high = mid;
-        }
-      }
-      final y = (low + high) / 2;
-      top.add(Offset(x, cy - y));
-      bottom.add(Offset(x, cy + y));
-    }
-    finish();
-    return path;
-  }
-
-  @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
-      _outline(rect);
-
-  @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
-      _outline(rect.deflate(side.width));
-
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    if (side.style != BorderStyle.none && side.width > 0) {
-      canvas.drawPath(_outline(rect.deflate(side.width / 2)), side.toPaint());
-    }
-  }
-}

@@ -1,4 +1,4 @@
-part of '../liquid_ui_components.dart';
+part of 'liquid_glass_navigation.dart';
 
 class _AndroidGlassBar extends StatefulWidget {
   const _AndroidGlassBar({
@@ -465,19 +465,13 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
         // Surface first: the live backdrop, not a flattened screenshot or icon texture.
         Positioned.fill(
           child: IgnorePointer(
-            child: DecoratedBox(
+            child: GlassShadow(
               key: const ValueKey('android-glass-surface'),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.tintColor.withValues(
-                      alpha: dark ? 0.24 : 0.09,
-                    ),
-                    blurRadius: 18,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
+              radius: BorderRadius.circular(30),
+              shadow: BoxShadow(
+                color: widget.tintColor.withValues(alpha: dark ? 0.24 : 0.09),
+                blurRadius: 18,
+                offset: const Offset(0, 5),
               ),
               child: _surface(dark: dark, highContrast: highContrast),
             ),
@@ -618,40 +612,28 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
           width: 1.2,
         ),
       ),
-      child: LiquidGlassLens(
-        style: LiquidGlassStyle(
-          shape: LiquidGlassShape.continuousRoundedRectangle(
-            cornerRadius: radius,
-            borderWidth: selector ? 1.1 : 0.8,
-            lightIntensity: selector ? 0.85 + lift * 0.35 : 0.65,
-            lightDirection: 115 + (selector ? _motion * lift * 25 : 0),
-            lightColor: Colors.white.withValues(alpha: dark ? 0.55 : 0.85),
-            borderType: OpticalBorder(
-              ambientIntensity: selector ? 0.65 : 0.35,
-              lightSpread: selector ? 0.65 : 0.45,
-              borderSaturation: 1.08,
-            ),
-          ),
-          appearance: LiquidGlassAppearance(
-            color: tint,
-            saturation: selector ? 1.12 : 1.2,
-            // The selector stays clear. Its optical bevel does the smearing, not a text blur.
-            blur: LiquidGlassBlur(
-              sigmaX: selector ? 0 : 8,
-              sigmaY: selector ? 0 : 8,
-            ),
-          ),
-          refraction: LiquidGlassRefraction(
-            magnification: selector ? 1.015 + 0.12 * lift : 1,
-            chromaticAberration: selector ? 0.0008 + 0.0012 * lift : 0.0005,
-            refractionType: OpticalRefraction(
-              refraction: selector ? 1.5 : 1.35,
-              refractionWidth: selector ? 8 + 4 * lift : 8,
-              depth: selector
-                  ? 0.065 + 0.09 * lift + 0.025 * _motion.abs() * lift
-                  : 0.045,
-            ),
-          ),
+      child: LiquidGlassSurface(
+        borderRadius: BorderRadius.circular(radius),
+        settings: LiquidGlassSettings(
+          tintColor: tint.withValues(alpha: 1),
+          opacity: tint.a,
+          saturation: selector ? 1.12 : 1.2,
+          blur: selector ? 0 : 8,
+          borderWidth: selector ? 1.1 : 0.8,
+          lightIntensity: selector ? 0.85 + lift * 0.35 : 0.65,
+          lightDirection: 115 + (selector ? _motion * lift * 25 : 0),
+          edgeAmbientIntensity: selector ? 0.65 : 0.35,
+          edgeLightSpread: selector ? 0.65 : 0.45,
+          magnification: selector ? 1.015 + 0.12 * lift : 1,
+          chromaticAberration: selector ? 0.0008 + 0.0012 * lift : 0.0005,
+          refraction: selector ? 1.5 : 1.35,
+          refractionWidth: selector ? 8 + 4 * lift : 8,
+          scaleRefractionWithSize: false,
+          depth: selector
+              ? 0.065 + 0.09 * lift + 0.025 * _motion.abs() * lift
+              : 0.045,
+          shadowOpacity: 0,
+          animationDuration: Duration.zero,
         ),
         child: const SizedBox.expand(),
       ),

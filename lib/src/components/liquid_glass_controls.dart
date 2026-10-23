@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:flutter/physics.dart';
 import 'package:flutter/scheduler.dart';
 
-import 'liquid_glass_surface.dart';
-import 'liquid_glass_dynamics.dart';
+import '../surfaces/liquid_glass_surface.dart';
+import '../motion/liquid_glass_dynamics.dart';
 
 export 'liquid_glass_slider.dart';
 
@@ -278,7 +279,7 @@ class LiquidGlassSegmentedControl<T> extends StatelessWidget {
 }
 
 /// A controlled glass-backed switch with native toggle semantics.
-class LiquidGlassSwitch extends StatelessWidget {
+class LiquidGlassSwitch extends StatefulWidget {
   const LiquidGlassSwitch({
     super.key,
     required this.value,
@@ -295,23 +296,213 @@ class LiquidGlassSwitch extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) => LiquidGlassDynamics(
-    enabled: onChanged != null,
-    intensity:
-        (settings ?? LiquidGlassTheme.of(context)).dynamicsIntensity * 0.8,
-    child: LiquidGlassSurface(
-      settings: settings,
-      child: Semantics(
-        label: semanticLabel,
-        child: Switch(
-          value: value,
-          onChanged: onChanged,
-          autofocus: autofocus,
-          materialTapTargetSize: MaterialTapTargetSize.padded,
+  State<LiquidGlassSwitch> createState() => _LiquidGlassSwitchState();
+}
+
+class _LiquidGlassSwitchState extends State<LiquidGlassSwitch> {
+  final _pointers = <int>{};
+  final _origins = <int, Offset>{};
+  ScrollPosition? _scrollPosition;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final next = Scrollable.maybeOf(context, axis: Axis.vertical)?.position;
+    if (next == _scrollPosition) return;
+    _scrollPosition?.isScrollingNotifier.removeListener(_scrollChanged);
+    _scrollPosition = next;
+    next?.isScrollingNotifier.addListener(_scrollChanged);
+  }
+
+  void _scrollChanged() {
+    if (_scrollPosition?.isScrollingNotifier.value == true &&
+        _pointers.isNotEmpty) {
+      setState(() {
+        _pointers.clear();
+        _origins.clear();
+      });
+    }
+  }
+
+  @override
+  void deactivate() {
+    _pointers.clear();
+    _origins.clear();
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    _scrollPosition?.isScrollingNotifier.removeListener(_scrollChanged);
+    super.dispose();
+  }
+
+  void _release(int pointer) {
+    _origins.remove(pointer);
+    if (_pointers.contains(pointer)) setState(() => _pointers.remove(pointer));
+  }
+
+  @override
+  void didUpdateWidget(LiquidGlassSwitch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.onChanged == null) {
+      _pointers.clear();
+      _origins.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final config = widget.settings ?? LiquidGlassTheme.of(context);
+    final expand =
+        _pointers.isNotEmpty &&
+            widget.onChanged != null &&
+            !MediaQuery.disableAnimationsOf(context)
+        ? config.dynamicsIntensity
+        : 0.0;
+    final clear =
+        _pointers.isNotEmpty &&
+        widget.onChanged != null &&
+        !config.reduceTransparency &&
+        !MediaQuery.highContrastOf(context);
+    final diameter = 24 + 8 * expand;
+    return Listener(
+      onPointerDown: widget.onChanged == null
+          ? null
+          : (event) {
+              // Raw pointer up/cancel is not sent when a scroll wins the
+              // gesture arena. Track vertical intent and scroll state too.
+              if (_scrollPosition?.isScrollingNotifier.value == true) return;
+              setState(() {
+                _pointers.add(event.pointer);
+                _origins[event.pointer] = event.position;
+              });
+            },
+      onPointerMove: (event) {
+        final origin = _origins[event.pointer];
+        if (origin == null) return;
+        final delta = event.position - origin;
+        if (delta.dy.abs() > kTouchSlop && delta.dy.abs() > delta.dx.abs()) {
+          _release(event.pointer);
+        }
+      },
+      onPointerUp: (event) => _release(event.pointer),
+      onPointerCancel: (event) => _release(event.pointer),
+      child: LiquidGlassDynamics(
+        enabled: widget.onChanged != null,
+        // Keep the track fixed while only its thumb expands.
+        intensity: 0,
+        child: Semantics(
+          label: widget.semanticLabel,
+          child: SizedBox(
+            width: 60,
+            height: 48,
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 4,
+                  right: 4,
+                  top: 10,
+                  height: 28,
+                  child: LiquidGlassSurface(
+                    settings: widget.settings,
+                    borderRadius: BorderRadius.circular(14),
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 2,
+                        vertical: 8,
+                      ),
+                      child: AnimatedAlign(
+                        alignment: widget.value
+                            ? AlignmentDirectional.centerEnd
+                            : AlignmentDirectional.centerStart,
+                        duration: MediaQuery.disableAnimationsOf(context)
+                            ? Duration.zero
+                            : (widget.settings ?? LiquidGlassTheme.of(context))
+                                  .animationDuration,
+                        child: SizedBox.square(
+                          dimension: 32,
+                          child: Center(
+                            child: BackdropGroup(
+                              child: LiquidGlassSurface(
+                                key: const ValueKey('glass-switch-thumb'),
+                                settings:
+                                    (widget.settings ??
+                                            LiquidGlassTheme.of(context))
+                                        .copyWith(
+                                          rendering:
+                                              clear &&
+                                                  config.rendering ==
+                                                      LiquidGlassRendering
+                                                          .frosted
+                                              ? LiquidGlassRendering.balanced
+                                              : config.rendering,
+                                          variant: clear
+                                              ? LiquidGlassVariant.clear
+                                              : config.variant,
+                                          opacity: clear
+                                              ? config.opacity.clamp(0.0, 0.045)
+                                              : config.opacity,
+                                          blur: clear ? 0 : config.blur,
+                                          magnification: clear
+                                              ? 1 + 0.18 * expand
+                                              : config.magnification,
+                                          shadowBlur: 4,
+                                          shadowOpacity: 0.08,
+                                          animationDuration: Duration.zero,
+                                        ),
+                                borderRadius: BorderRadius.circular(
+                                  diameter / 2,
+                                ),
+                                child: AnimatedContainer(
+                                  duration:
+                                      MediaQuery.disableAnimationsOf(context)
+                                      ? Duration.zero
+                                      : config.animationDuration,
+                                  curve: Curves.easeOutCubic,
+                                  width: diameter,
+                                  height: diameter,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Switch(
+                    value: widget.value,
+                    onChanged: widget.onChanged,
+                    autofocus: widget.autofocus,
+                    thumbColor: const WidgetStatePropertyAll(
+                      Colors.transparent,
+                    ),
+                    trackColor: const WidgetStatePropertyAll(
+                      Colors.transparent,
+                    ),
+                    trackOutlineColor: const WidgetStatePropertyAll(
+                      Colors.transparent,
+                    ),
+                    overlayColor: const WidgetStatePropertyAll(
+                      Colors.transparent,
+                    ),
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _GlassActionDynamics extends StatefulWidget {

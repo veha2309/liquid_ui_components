@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_ui_components/liquid_glass.dart';
-import 'package:liquid_ui_components/src/liquid_glass_scroll.dart';
+import 'package:liquid_ui_components/src/scrolling/liquid_glass_scroll.dart';
 
 class _PaintProbe extends LeafRenderObjectWidget {
   const _PaintProbe(this.onPaint, {super.key});

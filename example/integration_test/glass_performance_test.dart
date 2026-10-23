@@ -54,7 +54,7 @@ void main() {
 
     // Separate control cost from the intentionally animated gallery backdrop.
     await tester.tap(find.byTooltip('Pause background'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
     await morphCycles(2);
     await measure('morph_static_background', () => morphCycles(6));
     await tester.tap(find.byTooltip('Animate background'));
