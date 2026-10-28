@@ -421,10 +421,9 @@ material defaults to make the effect easier to inspect.
 `LiquidGlassMorph` keeps one glass lens while animating its dimensions, corner
 radius and optical properties. The host controls expansion; the two child trees
 retain their state and crossfade inside the changing outline.
-The outline swells into a curved, asymmetric droplet before spreading into the
-panel. Width and height arrive at different times; the clip, rim and shadow
-follow the same cubic contour. A nearly critically damped spring preserves
-momentum when reversing, with overlapping content reveals.
+The leading edge pulls ahead while the body follows on its own spring. The
+clip, rim and shadow follow the same contour. Each axis preserves momentum on
+reversal, with overlapping content reveals and exact settled outlines.
 
 ```dart
 // In a State with: bool expanded = false;
@@ -463,13 +462,29 @@ Customize `collapsedBorderRadius`, `expandedBorderRadius`, `alignment`, `duratio
 and `curve`. Supply `settings` and `expandedSettings` for material endpoints;
 otherwise expanded glass gains depth and shadow opacity while keeping blur
 and shadow kernels stable during animation.
+Select `motion: LiquidGlassMorphMotion.droplet` for a stretched body and rounded
+leading lobe, `.jelly` for a soft elastic wobble, or `.merge` for a pronounced
+liquid bridge between two lobes. The gallery's **Morph** selector compares all
+three. Droplet is the default; all styles preserve momentum on reversal.
+Supply `onExpandedChanged: (value) => setState(() => expanded = value)` to enable
+hold-and-slide interaction. Hold the compact control, then slide down to expand;
+hold the expanded panel's header and slide up to collapse. The default hold is
+120 ms, configurable with `dragHoldDuration`. The lens follows the
+finger and settles on release, opening once the pull crosses halfway. A short
+pull returns to the original state. Regular taps and panel scrolling remain
+available; hold-and-slide starts only in the top collapsed-height header area.
 `duration` controls the spring's perceptual pace (380 ms by default), with a short
 settling tail. Keep the default linear `curve` for natural spring motion.
 Rendering mode, variant and accessibility preferences use the target settings immediately.
 The optical renderer samples a rectangular refraction field inside the custom
 outline; refraction does not yet follow the droplet's perimeter.
-This is an inline layout component; overlay placement and dismissal belong to
-the host. Try **Quick controls** in the example gallery.
+The default mode expands inline. Set `overlay: true` to keep the collapsed
+layout footprint while the lens floats over the content underneath. It follows
+its anchor in the nearest `Overlay` (provided by `MaterialApp`/`Navigator`),
+escapes ancestor clips, and keeps panel controls interactive. Outside taps pass
+through; the host still controls closing with `expanded`. Use top-start
+placement and leave enough room below the anchor for the panel. Try **Quick
+controls** in the example gallery.
 
 For a title that moves from button to panel without fading, supply `sharedChild`
 once and reserve its space in both state children. Set

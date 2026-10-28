@@ -42,6 +42,25 @@ class _GlassRimPainter extends CustomPainter {
       ],
       stops: [0, 0.18 + spread * 0.38, 0.76, 1],
     );
+    // Broad reflected light gives the portable blur material a glass face,
+    // rather than only a bright wire outline. Keep the centre transparent.
+    canvas.drawPath(
+      _path(rect),
+      Paint()
+        ..shader = LinearGradient(
+          begin: light,
+          end: -light,
+          colors: [
+            Colors.white.withValues(
+              alpha: (intensity * 0.075).clamp(0.0, 0.12),
+            ),
+            Colors.white.withValues(alpha: 0.008),
+            Colors.transparent,
+            Colors.white.withValues(alpha: (ambient * 0.035).clamp(0.0, 0.04)),
+          ],
+          stops: const [0, 0.22, 0.68, 1],
+        ).createShader(rect),
+    );
     canvas.drawPath(
       _path(rect.deflate(rim / 2)),
       Paint()
@@ -49,6 +68,32 @@ class _GlassRimPainter extends CustomPainter {
         ..strokeWidth = rim
         ..shader = gradient.createShader(rect),
     );
+    // A wider, translucent bevel gives the edge visible thickness. The sharp
+    // outer rim alone reads as an outlined card on non-optical backends.
+    final bevel = math.min(6.0, size.shortestSide * 0.08);
+    if (bevel > rim * 2) {
+      canvas.drawPath(
+        _path(rect.deflate(bevel / 2)),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = bevel
+          ..shader = LinearGradient(
+            begin: light,
+            end: -light,
+            colors: [
+              Colors.white.withValues(
+                alpha: (intensity * 0.10).clamp(0.0, 0.16),
+              ),
+              Colors.transparent,
+              Colors.black.withValues(alpha: (ambient * 0.12).clamp(0.0, 0.12)),
+              Colors.white.withValues(
+                alpha: (intensity * 0.035).clamp(0.0, 0.06),
+              ),
+            ],
+            stops: const [0, 0.35, 0.72, 1],
+          ).createShader(rect),
+      );
+    }
     // A quieter inner rim defines thickness without another blur or saveLayer.
     if (size.shortestSide > rim * 4) {
       canvas.drawPath(

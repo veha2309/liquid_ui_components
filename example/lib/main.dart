@@ -32,6 +32,7 @@ class _GlassGalleryState extends State<GlassGallery> {
   bool playing = false;
   bool collectionSaved = false;
   bool morphExpanded = false;
+  LiquidGlassMorphMotion morphMotion = LiquidGlassMorphMotion.droplet;
   bool backgroundMotion = true;
   // Keep the demo usable while native refraction is under device validation.
   LiquidGlassRendering rendering = LiquidGlassRendering.frosted;
@@ -204,91 +205,127 @@ class _GlassGalleryState extends State<GlassGallery> {
                     const SizedBox(height: 24),
                     Align(
                       alignment: AlignmentDirectional.topStart,
-                      child: LiquidGlassMorph(
-                        expanded: morphExpanded,
-                        collapsedSize: const Size(160, 56),
-                        expandedSize: const Size(320, 216),
-                        sharedChild: Text(
-                          'Quick controls',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.labelLarge,
-                        ),
-                        collapsedSharedAlignment:
-                            AlignmentDirectional.centerStart,
-                        collapsedSharedPadding:
-                            const EdgeInsetsDirectional.fromSTEB(44, 0, 8, 0),
-                        expandedSharedPadding:
-                            const EdgeInsetsDirectional.fromSTEB(16, 30, 64, 0),
-                        collapsedChild: Semantics(
-                          label: 'Expand quick controls',
-                          child: TextButton(
-                            onPressed: () =>
-                                setState(() => morphExpanded = true),
-                            child: const Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: Icon(Icons.tune_rounded),
-                            ),
-                          ),
-                        ),
-                        expandedChild: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Row(
-                                children: [
-                                  const Spacer(),
-                                  IconButton(
-                                    tooltip: 'Collapse controls',
-                                    onPressed: () =>
-                                        setState(() => morphExpanded = false),
-                                    icon: const Icon(Icons.close_rounded),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DropdownButton<LiquidGlassMorphMotion>(
+                            value: morphMotion,
+                            items: LiquidGlassMorphMotion.values
+                                .map(
+                                  (motion) => DropdownMenuItem(
+                                    value: motion,
+                                    child: Text('Morph: ${motion.name}'),
                                   ),
-                                ],
+                                )
+                                .toList(),
+                            onChanged: (motion) {
+                              if (motion != null) {
+                                setState(() => morphMotion = motion);
+                              }
+                            },
+                          ),
+                          LiquidGlassMorph(
+                            expanded: morphExpanded,
+                            motion: morphMotion,
+                            onExpandedChanged: (value) =>
+                                setState(() => morphExpanded = value),
+                            collapsedSize: const Size(160, 56),
+                            expandedSize: const Size(320, 216),
+                            sharedChild: Text(
+                              'Quick controls',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            collapsedSharedAlignment:
+                                AlignmentDirectional.centerStart,
+                            collapsedSharedPadding:
+                                const EdgeInsetsDirectional.fromSTEB(
+                                  44,
+                                  0,
+                                  8,
+                                  0,
+                                ),
+                            expandedSharedPadding:
+                                const EdgeInsetsDirectional.fromSTEB(
+                                  16,
+                                  30,
+                                  64,
+                                  0,
+                                ),
+                            collapsedChild: Semantics(
+                              label: 'Expand quick controls',
+                              child: TextButton(
+                                onPressed: () =>
+                                    setState(() => morphExpanded = true),
+                                child: const Align(
+                                  alignment: AlignmentDirectional.centerStart,
+                                  child: Icon(Icons.tune_rounded),
+                                ),
                               ),
-                              const SizedBox(height: 8),
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
+                            ),
+                            expandedChild: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
                                     children: [
-                                      TextButton.icon(
-                                        onPressed: () =>
-                                            setState(() => playing = !playing),
-                                        icon: Icon(
-                                          playing
-                                              ? Icons.pause
-                                              : Icons.play_arrow,
+                                      const Spacer(),
+                                      IconButton(
+                                        tooltip: 'Collapse controls',
+                                        onPressed: () => setState(
+                                          () => morphExpanded = false,
                                         ),
-                                        label: Text(
-                                          playing
-                                              ? 'Pause playback'
-                                              : 'Play music',
-                                        ),
-                                      ),
-                                      TextButton.icon(
-                                        onPressed: () =>
-                                            setState(() => dark = !dark),
-                                        icon: Icon(
-                                          dark
-                                              ? Icons.light_mode
-                                              : Icons.dark_mode,
-                                        ),
-                                        label: Text(
-                                          dark
-                                              ? 'Light appearance'
-                                              : 'Dark appearance',
-                                        ),
+                                        icon: const Icon(Icons.close_rounded),
                                       ),
                                     ],
                                   ),
-                                ),
+                                  const SizedBox(height: 8),
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          TextButton.icon(
+                                            onPressed: () => setState(
+                                              () => playing = !playing,
+                                            ),
+                                            icon: Icon(
+                                              playing
+                                                  ? Icons.pause
+                                                  : Icons.play_arrow,
+                                            ),
+                                            label: Text(
+                                              playing
+                                                  ? 'Pause playback'
+                                                  : 'Play music',
+                                            ),
+                                          ),
+                                          TextButton.icon(
+                                            onPressed: () =>
+                                                setState(() => dark = !dark),
+                                            icon: Icon(
+                                              dark
+                                                  ? Icons.light_mode
+                                                  : Icons.dark_mode,
+                                            ),
+                                            label: Text(
+                                              dark
+                                                  ? 'Light appearance'
+                                                  : 'Dark appearance',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 24),

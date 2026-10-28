@@ -1,18 +1,23 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/physics.dart';
 
 import '../surfaces/liquid_glass_surface.dart';
 
 part 'morph_geometry.dart';
 
+/// The spatial character of a glass transition.
+enum LiquidGlassMorphMotion { droplet, jelly, merge }
+
 /// A single glass lens that expands from a compact control into a panel.
 ///
 /// The host owns [expanded] and supplies actions in both children. Place in an
 /// Align or Stack with loose constraints to allow the surface to change size.
-/// This widget participates in layout; it does not present an overlay or manage
-/// route dismissal. Children retain their state, but only the settled, visible
+/// By default this widget participates in layout. Set [overlay] to expand over
+/// surrounding content while retaining only the compact layout footprint.
+/// Children retain their state, but only the settled, visible
 /// target child accepts input, focus and accessibility traversal once revealed.
 class LiquidGlassMorph extends StatefulWidget {
   LiquidGlassMorph({
@@ -22,6 +27,10 @@ class LiquidGlassMorph extends StatefulWidget {
     required this.expandedSize,
     required this.collapsedChild,
     required this.expandedChild,
+    this.onExpandedChanged,
+    this.overlay = false,
+    this.dragHoldDuration = const Duration(milliseconds: 120),
+    this.motion = LiquidGlassMorphMotion.droplet,
     this.sharedChild,
     this.collapsedSharedAlignment = AlignmentDirectional.center,
     this.expandedSharedAlignment = AlignmentDirectional.topStart,
@@ -40,13 +49,30 @@ class LiquidGlassMorph extends StatefulWidget {
        ),
        assert(expandedSize.width > 0 && expandedSize.width < double.infinity),
        assert(expandedSize.height > 0 && expandedSize.height < double.infinity),
-       assert(!duration.isNegative);
+       assert(!duration.isNegative),
+       assert(!dragHoldDuration.isNegative);
 
   final bool expanded;
   final Size collapsedSize;
   final Size expandedSize;
   final Widget collapsedChild;
   final Widget expandedChild;
+
+  /// Paint the lens in the nearest Overlay, anchored to the compact control.
+  /// Expansion does not push siblings or get clipped by a parent scroll view.
+  /// Only the glass intercepts input; outside taps pass through. The host still
+  /// controls dismissal through [expanded]. Requires an ancestor Overlay.
+  final bool overlay;
+
+  /// Brief hold before a vertical pull owns the gesture. Ordinary swipes can
+  /// still scroll before this deadline. Defaults to 120 ms.
+  final Duration dragHoldDuration;
+  final LiquidGlassMorphMotion motion;
+
+  /// Enables hold-and-slide interaction on the compact control and panel
+  /// header. Drag down to open, up to close, then release to settle. The host
+  /// must update [expanded] in response. Panel scrolling stays independent.
+  final ValueChanged<bool>? onExpandedChanged;
 
   /// Content rendered once above both states, such as a title that travels
   /// from the button to the panel header without fading or being duplicated.
@@ -83,30 +109,83 @@ class LiquidGlassMorph extends StatefulWidget {
 }
 
 class _LiquidGlassMorphState extends State<LiquidGlassMorph>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController.unbounded(
     vsync: this,
     duration: widget.duration,
     value: widget.expanded ? 1 : 0,
   );
+  late final AnimationController _body = AnimationController.unbounded(
+    vsync: this,
+    value: widget.expanded ? 1 : 0,
+  );
+  late final Listenable _motion = Listenable.merge([_controller, _body]);
+  double? _dragStart;
+  double _dragProgress = 0;
+  double _dragBodyProgress = 0;
+  double _dragExtent = 1;
+  final _overlayController = OverlayPortalController()..show();
+
+  void _endDrag({bool cancel = false, double velocity = 0}) {
+    if (_dragStart == null) return;
+    _dragStart = null;
+    final target = cancel ? widget.expanded : _controller.value >= 0.5;
+    if (target != widget.expanded) widget.onExpandedChanged?.call(target);
+    _animateTo(target ? 1 : 0, velocity: cancel ? 0 : velocity);
+  }
 
   void _animate() {
-    final target = widget.expanded ? 1.0 : 0.0;
-    if (_controller.value == target && !_controller.isAnimating) return;
+    if (_dragStart != null) return;
+    _animateTo(widget.expanded ? 1 : 0);
+  }
+
+  void _animateTo(double target, {double? velocity}) {
+    if (_controller.value == target &&
+        !_controller.isAnimating &&
+        _body.value == target &&
+        !_body.isAnimating) {
+      return;
+    }
     if (MediaQuery.disableAnimationsOf(context) ||
         widget.duration == Duration.zero) {
       _controller.value = target;
+      _body.value = target;
     } else {
-      final velocity = _controller.velocity;
+      final springVelocity = velocity ?? _controller.velocity;
       _controller.animateWith(
         SpringSimulation(
           SpringDescription.withDurationAndBounce(
             duration: widget.duration,
-            bounce: 0.02,
+            bounce: widget.motion == LiquidGlassMorphMotion.jelly
+                ? 0.36
+                : 0.065,
           ),
           _controller.value,
           target,
-          velocity,
+          springVelocity,
+          snapToEnd: true,
+          tolerance: const Tolerance(distance: 0.002, velocity: 0.02),
+        ),
+      );
+      // The leading axis pulls ahead; the heavier body follows on its own
+      // spring. Each retains momentum when retargeted, so reversing does not
+      // switch a curve or abruptly flip the silhouette.
+      _body.animateWith(
+        SpringSimulation(
+          SpringDescription.withDurationAndBounce(
+            duration: Duration(
+              microseconds:
+                  (widget.duration.inMicroseconds *
+                          (widget.motion == LiquidGlassMorphMotion.jelly
+                              ? 1.5
+                              : 1.22))
+                      .round(),
+            ),
+            bounce: widget.motion == LiquidGlassMorphMotion.jelly ? 0.40 : 0.09,
+          ),
+          _body.value,
+          target,
+          velocity ?? _body.velocity,
           snapToEnd: true,
           tolerance: const Tolerance(distance: 0.002, velocity: 0.02),
         ),
@@ -132,6 +211,7 @@ class _LiquidGlassMorphState extends State<LiquidGlassMorph>
   @override
   void dispose() {
     _controller.dispose();
+    _body.dispose();
     super.dispose();
   }
 
@@ -149,32 +229,32 @@ class _LiquidGlassMorphState extends State<LiquidGlassMorph>
     return LayoutBuilder(
       builder: (context, constraints) {
         final small = constraints.constrain(widget.collapsedSize);
-        final large = constraints.constrain(widget.expandedSize);
-        return AnimatedBuilder(
-          animation: _controller,
+        final lensConstraints = widget.overlay
+            ? constraints.copyWith(
+                minWidth: 0,
+                minHeight: 0,
+                maxHeight: double.infinity,
+              )
+            : constraints;
+        final large = lensConstraints.constrain(widget.expandedSize);
+        final animatedLens = AnimatedBuilder(
+          animation: _motion,
           builder: (context, _) {
             final progress = _controller.value;
             final t = widget.curve
                 .transform(progress.clamp(0.0, 1.0))
                 .clamp(0.0, 1.0);
-            // Preserve the spring's slight overshoot. Velocity gently stretches
-            // the leading axis while the other catches up, like a soft lens.
             final flow = math.sin(math.pi * t);
-            final stretch =
-                (_controller.velocity * 0.014).clamp(-0.07, 0.07) * flow;
             final overshoot = progress - progress.clamp(0.0, 1.0);
-            // The surface spreads across before filling downwards. Different
-            // arrival times plus the moving contour avoid rectangular scaling.
-            final across = math.pow(t, 0.80).toDouble() + overshoot;
-            final down = math.pow(t, 1.14).toDouble() + overshoot;
-            final width =
-                (small.width + (large.width - small.width) * (across + stretch))
-                    .clamp(1.0, double.infinity);
-            final height =
-                (small.height +
-                        (large.height - small.height) * (down - stretch * 0.65))
-                    .clamp(1.0, double.infinity);
-            final size = constraints.constrain(Size(width, height));
+            final bodyProgress = _body.value;
+            final bodyT = widget.curve.transform(bodyProgress.clamp(0.0, 1.0));
+            final across = t + overshoot;
+            final down = bodyT + bodyProgress - bodyProgress.clamp(0.0, 1.0);
+            final width = (small.width + (large.width - small.width) * across)
+                .clamp(1.0, double.infinity);
+            final height = (small.height + (large.height - small.height) * down)
+                .clamp(1.0, double.infinity);
+            final size = lensConstraints.constrain(Size(width, height));
             final energy =
                 (_controller.velocity.abs() / 10).clamp(0.0, 1.0) * flow;
             double mix(double a, double b) => a + (b - a) * t;
@@ -272,7 +352,7 @@ class _LiquidGlassMorphState extends State<LiquidGlassMorph>
               );
             }
 
-            return RepaintBoundary(
+            final lens = RepaintBoundary(
               child: LiquidGlassSurface(
                 settings: material,
                 shape: _FluidGlassBorder(
@@ -281,8 +361,12 @@ class _LiquidGlassMorphState extends State<LiquidGlassMorph>
                     widget.expandedBorderRadius,
                     t,
                   )!,
-                  fullness: flow,
+                  fullness:
+                      (math.sin(math.pi * math.min(t, bodyT)) +
+                              (t - bodyT).abs())
+                          .clamp(0.0, 1.0),
                   direction: alignment,
+                  motion: widget.motion,
                 ),
                 borderRadius:
                     BorderRadius.lerp(
@@ -339,7 +423,74 @@ class _LiquidGlassMorphState extends State<LiquidGlassMorph>
                 ),
               ),
             );
+            if (widget.onExpandedChanged == null) return lens;
+            return RawGestureDetector(
+              behavior: HitTestBehavior.translucent,
+              gestures: {
+                LongPressGestureRecognizer:
+                    GestureRecognizerFactoryWithHandlers<
+                      LongPressGestureRecognizer
+                    >(
+                      () => LongPressGestureRecognizer(
+                        duration: widget.dragHoldDuration,
+                      ),
+                      (recognizer) {
+                        recognizer.onLongPressStart = (details) {
+                          if (details.localPosition.dy > small.height) return;
+                          _dragStart = details.globalPosition.dy;
+                          _dragProgress = _controller.value.clamp(0.0, 1.0);
+                          _dragBodyProgress = _body.value.clamp(0.0, 1.0);
+                          _dragExtent = math.max(
+                            80,
+                            large.height - small.height,
+                          );
+                          _controller.stop();
+                          _body.stop();
+                        };
+                        recognizer.onLongPressMoveUpdate = (details) {
+                          final start = _dragStart;
+                          if (start == null) return;
+                          _controller.value =
+                              (_dragProgress +
+                                      (details.globalPosition.dy - start) /
+                                          _dragExtent)
+                                  .clamp(0.0, 1.0);
+                          _body.value =
+                              (_dragBodyProgress +
+                                      (details.globalPosition.dy - start) /
+                                          _dragExtent)
+                                  .clamp(0.0, 1.0);
+                        };
+                        recognizer.onLongPressEnd = (details) => _endDrag(
+                          velocity:
+                              (details.velocity.pixelsPerSecond.dy /
+                                      _dragExtent)
+                                  .clamp(-8.0, 8.0),
+                        );
+                        recognizer.onLongPressCancel = () =>
+                            _endDrag(cancel: true);
+                      },
+                    ),
+              },
+              child: lens,
+            );
           },
+        );
+        if (!widget.overlay) return animatedLens;
+        return OverlayPortal.overlayChildLayoutBuilder(
+          controller: _overlayController,
+          overlayChildBuilder: (context, info) {
+            final origin = MatrixUtils.transformPoint(
+              info.childPaintTransform,
+              Offset.zero,
+            );
+            return Positioned(
+              left: origin.dx,
+              top: origin.dy,
+              child: animatedLens,
+            );
+          },
+          child: SizedBox.fromSize(size: small),
         );
       },
     );

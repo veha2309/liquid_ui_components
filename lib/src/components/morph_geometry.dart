@@ -62,14 +62,15 @@ class _MorphSharedLayout extends SingleChildLayoutDelegate {
       endPadding != oldDelegate.endPadding;
 }
 
-/// A continuous perimeter that swells from the source capsule into a rounded
-/// droplet before the edges spread into the destination panel. All surface
+/// A continuous perimeter with a travelling waist and rounded leading lobe
+/// as the source capsule spreads into the destination panel. All surface
 /// layers use the same path; the children themselves remain undistorted.
 class _FluidGlassBorder extends OutlinedBorder {
   _FluidGlassBorder({
     required this.borderRadius,
     required this.fullness,
     required this.direction,
+    required this.motion,
     super.side,
     Map<Rect, Path>? paths,
   }) : _paths = paths ?? {};
@@ -77,12 +78,8 @@ class _FluidGlassBorder extends OutlinedBorder {
   final BorderRadius borderRadius;
   final double fullness;
   final Alignment direction;
+  final LiquidGlassMorphMotion motion;
   final Map<Rect, Path> _paths;
-  static final _unitCircle = List<Offset>.generate(64, (i) {
-    final angle = i * 2 * math.pi / 64;
-    return Offset(math.cos(angle), math.sin(angle));
-  }, growable: false);
-
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.all(side.width);
 
@@ -91,6 +88,7 @@ class _FluidGlassBorder extends OutlinedBorder {
     borderRadius: borderRadius,
     fullness: fullness,
     direction: direction,
+    motion: motion,
     side: side ?? this.side,
     paths: _paths,
   );
@@ -100,6 +98,7 @@ class _FluidGlassBorder extends OutlinedBorder {
     borderRadius: borderRadius * t,
     fullness: fullness,
     direction: direction,
+    motion: motion,
     side: side.scale(t),
   );
 
@@ -109,63 +108,99 @@ class _FluidGlassBorder extends OutlinedBorder {
     if (rect.isEmpty) return Path();
     final rounded = borderRadius.toRRect(rect).scaleRadii();
     if (fullness < 0.00001) return Path()..addRRect(rounded);
-    final hw = rect.width / 2;
-    final hh = rect.height / 2;
-    // The edge furthest from the source stays round longer, making a moving
-    // liquid front rather than four corners changing radius simultaneously.
-    final heading = Offset(-direction.x, -direction.y);
-    final headingUnit = heading.distance > 0
-        ? heading / heading.distance
-        : const Offset(1, 0);
-    const count = 64;
-    final points = List<Offset>.generate(count, (i) {
-      final dx = _unitCircle[i].dx;
-      final dy = _unitCircle[i].dy;
-      final ax = dx.abs();
-      final ay = dy.abs();
-      final radius = dx < 0
-          ? (dy < 0 ? rounded.tlRadius : rounded.blRadius)
-          : (dy < 0 ? rounded.trRadius : rounded.brRadius);
-      var distance = math.min(
-        hw / math.max(ax, 1e-10),
-        hh / math.max(ay, 1e-10),
+    // Construct the perimeter from exact rounded-rectangle arcs. Uniform
+    // angular samples plus cubic tangents overshoot on wide panels, producing
+    // bulges even when the spring is almost settled. Corner-local deformation
+    // remains convex, inside layout bounds, and converges continuously.
+    final swell =
+        rect.shortestSide *
+        fullness *
+        switch (motion) {
+          LiquidGlassMorphMotion.droplet => 0.85,
+          LiquidGlassMorphMotion.jelly => 0.22,
+          LiquidGlassMorphMotion.merge => 0.9,
+        };
+    Radius corner(Radius radius, double weight) =>
+        Radius.elliptical(radius.x + swell * weight, radius.y + swell * weight);
+    final leadingRight = (1 - direction.x) / 2;
+    final leadingBottom = (1 - direction.y) / 2;
+    if (motion == LiquidGlassMorphMotion.jelly) {
+      // Jelly keeps a broad, soft body; its character comes from squash and
+      // the underdamped spring rather than a connecting neck.
+      return Path()..addRRect(
+        RRect.fromRectAndCorners(
+          rect,
+          topLeft: corner(rounded.tlRadius, 1),
+          topRight: corner(rounded.trRadius, 1),
+          bottomLeft: corner(rounded.blRadius, 1),
+          bottomRight: corner(rounded.brRadius, 1),
+        ).scaleRadii(),
       );
-      if (radius.x > 0 &&
-          radius.y > 0 &&
-          ax * distance > hw - radius.x &&
-          ay * distance > hh - radius.y) {
-        final cx = hw - radius.x;
-        final cy = hh - radius.y;
-        final rx2 = radius.x * radius.x;
-        final ry2 = radius.y * radius.y;
-        final a = ax * ax / rx2 + ay * ay / ry2;
-        final b = -2 * (ax * cx / rx2 + ay * cy / ry2);
-        final c = cx * cx / rx2 + cy * cy / ry2 - 1;
-        distance = (-b + math.sqrt(math.max(0.0, b * b - 4 * a * c))) / (2 * a);
-      }
-      final ellipse = 1 / math.sqrt(dx * dx / (hw * hw) + dy * dy / (hh * hh));
-      final blend =
-          fullness *
-          (0.78 + 0.20 * (dx * headingUnit.dx + dy * headingUnit.dy));
-      // A moving waist separates the source and leading lobe mid-flight.
-      // Fade it at both endpoints so the settled geometry stays exact.
-      final along = dx * headingUnit.dx + dy * headingUnit.dy;
-      final waist = math.exp(-math.pow((along - 0.12) / 0.30, 2));
-      final neck = 1 - 0.13 * fullness * waist * 4 * dx * dx * dy * dy;
-      final r = (distance + (ellipse - distance) * blend) * neck;
-      return rect.center + Offset(dx * r, dy * r);
-    });
-    final path = Path()..moveTo(points.first.dx, points.first.dy);
-    // Periodic cubic tangents keep the silhouette smooth, including at the seam.
-    for (var i = 0; i < count; i++) {
-      final previous = points[(i - 1 + count) % count];
-      final current = points[i];
-      final next = points[(i + 1) % count];
-      final after = points[(i + 2) % count];
-      final c1 = current + (next - previous) / 6;
-      final c2 = next - (after - current) / 6;
-      path.cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, next.dx, next.dy);
     }
+    final contour = RRect.fromRectAndCorners(
+      rect,
+      topLeft: corner(rounded.tlRadius, 0.08),
+      topRight: corner(rounded.trRadius, 0.15 + leadingRight * 0.75),
+      bottomLeft: corner(rounded.blRadius, 0.15 + leadingBottom * 0.75),
+      bottomRight: corner(
+        rounded.brRadius,
+        0.25 + (leadingRight + leadingBottom) * 0.65,
+      ),
+    ).scaleRadii();
+    if (motion == LiquidGlassMorphMotion.droplet) {
+      // One lobe: retain a small source corner while the far end balloons.
+      // No waist here: a droplet must not read as two merging bubbles.
+      return Path()..addRRect(contour);
+    }
+    // Give the body a moving waist, rather than four straight edges with
+    // changing radii. Cubic controls stay inside the layout bounds and meet
+    // the corner arcs tangentially; no angular resampling or overshoot.
+    final neck = rect.shortestSide * fullness * 0.42;
+    final path = Path();
+    void edge(Offset start, Offset end, Offset inward) {
+      final span = end - start;
+      final middle = start + span * 0.5 + inward;
+      path.cubicTo(
+        start.dx + span.dx * .2,
+        start.dy + span.dy * .2,
+        middle.dx - span.dx * .16,
+        middle.dy - span.dy * .16,
+        middle.dx,
+        middle.dy,
+      );
+      path.cubicTo(
+        middle.dx + span.dx * .16,
+        middle.dy + span.dy * .16,
+        end.dx - span.dx * .2,
+        end.dy - span.dy * .2,
+        end.dx,
+        end.dy,
+      );
+    }
+
+    final l = contour.left,
+        r = contour.right,
+        top = contour.top,
+        bottom = contour.bottom;
+    final tl = contour.tlRadius, tr = contour.trRadius;
+    final bl = contour.blRadius, br = contour.brRadius;
+    path.moveTo(l + tl.x, top);
+    edge(Offset(l + tl.x, top), Offset(r - tr.x, top), Offset(0, neck * .85));
+    path.arcToPoint(Offset(r, top + tr.y), radius: tr);
+    edge(
+      Offset(r, top + tr.y),
+      Offset(r, bottom - br.y),
+      Offset(-neck * .35, 0),
+    );
+    path.arcToPoint(Offset(r - br.x, bottom), radius: br);
+    edge(Offset(r - br.x, bottom), Offset(l + bl.x, bottom), Offset(0, -neck));
+    path.arcToPoint(Offset(l, bottom - bl.y), radius: bl);
+    edge(
+      Offset(l, bottom - bl.y),
+      Offset(l, top + tl.y),
+      Offset(neck * .15, 0),
+    );
+    path.arcToPoint(Offset(l + tl.x, top), radius: tl);
     return path..close();
   }
 
