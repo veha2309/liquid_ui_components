@@ -963,4 +963,3 @@ Compatibility entrypoints `liquid_glass.dart`, `liquid_glass_navigation.dart` an
 `liquid_retina_navigation.dart` also export the new API. Prefer the canonical
 entrypoint for new code. Existing navigation callbacks, controlled selection,
 color overrides and layout dimensions are preserved.
-

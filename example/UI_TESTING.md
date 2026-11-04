@@ -84,4 +84,3 @@ and no scenario snapshots were received. On-device verification remains pending:
 unlock the phone, leave its screen on, then rerun the device command above with
 a fresh output directory. The adapter and widget results do not establish device
 rendering correctness.
-
