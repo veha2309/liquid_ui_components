@@ -128,12 +128,8 @@ void main() {
         app(child, media: const MediaQueryData(disableAnimations: true)),
       );
       expect(find.byType(BackdropFilter), findsOneWidget);
-      expect(
-        tester
-            .widget<AnimatedContainer>(find.byType(AnimatedContainer).first)
-            .duration,
-        Duration.zero,
-      );
+      await tester.pump();
+      expect(tester.hasRunningAnimations, isFalse);
     },
   );
 

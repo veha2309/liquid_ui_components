@@ -13,6 +13,7 @@ analyzer:
   exclude:
     - build/**
     - android/**
+    - optional_ui_tests/**
 
 linter:
   # The lint rules applied to this project can be customized in the

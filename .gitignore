@@ -5,3 +5,9 @@ pubspec.lock
 example/.dart_tool/
 example/build/
 example/pubspec.lock
+launch_video/
+ui_tester_runs/
+example/ui_tester_runs/
+example/optional_ui_tests/.dart_tool/
+example/optional_ui_tests/pubspec.lock
+**/__pycache__/

@@ -1,0 +1,66 @@
+00:00 +0: loading C:/Users/HP/Desktop/vedant/mahila-mitr/liquid_retina_navigation/example/integration_test/glass_panel_brightness_test.dart
+Running Gradle task 'assembleDebug'...                             12.1s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...           5.9s
+00:00 +0: automatic surface height=48.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=automatic height=48.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=48.0 custom=false offset=100.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=48.0 custom=false offset=104.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.375, 158.0, 173.125, 134.375, 158.0, 173.125]
+SURFACE_BRIGHTNESS mode=automatic height=48.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+00:01 +1: automatic surface height=120.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=automatic height=120.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=120.0 custom=false offset=100.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=120.0 custom=false offset=104.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=120.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+00:03 +2: automatic surface height=120.0 custom=true keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=automatic height=120.0 custom=true offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=120.0 custom=true offset=100.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=120.0 custom=true offset=104.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=120.0 custom=true offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+00:05 +3: automatic surface height=650.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=automatic height=650.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=650.0 custom=false offset=100.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=650.0 custom=false offset=104.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=automatic height=650.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+00:06 +4: frosted surface height=48.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=frosted height=48.0 custom=false offset=60.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=48.0 custom=false offset=100.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=48.0 custom=false offset=104.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.375, 157.0, 170.125, 137.375, 157.0, 170.125]
+SURFACE_BRIGHTNESS mode=frosted height=48.0 custom=false offset=60.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+00:08 +5: frosted surface height=120.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=frosted height=120.0 custom=false offset=60.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=120.0 custom=false offset=100.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=120.0 custom=false offset=104.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=120.0 custom=false offset=60.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+00:09 +6: frosted surface height=120.0 custom=true keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=frosted height=120.0 custom=true offset=60.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=120.0 custom=true offset=100.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=120.0 custom=true offset=104.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=120.0 custom=true offset=60.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+00:11 +7: frosted surface height=650.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=frosted height=650.0 custom=false offset=60.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=650.0 custom=false offset=100.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=650.0 custom=false offset=104.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+SURFACE_BRIGHTNESS mode=frosted height=650.0 custom=false offset=60.0 before=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0] after=[137.0, 157.0, 170.0, 137.0, 157.0, 170.0]
+00:12 +8: balanced surface height=48.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=balanced height=48.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=48.0 custom=false offset=100.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=48.0 custom=false offset=104.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.375, 158.0, 173.125, 134.375, 158.0, 173.125]
+SURFACE_BRIGHTNESS mode=balanced height=48.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+00:14 +9: balanced surface height=120.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=balanced height=120.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=120.0 custom=false offset=100.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=120.0 custom=false offset=104.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=120.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+00:16 +10: balanced surface height=120.0 custom=true keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=balanced height=120.0 custom=true offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=120.0 custom=true offset=100.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=120.0 custom=true offset=104.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=120.0 custom=true offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+00:17 +11: balanced surface height=650.0 custom=false keeps brightness across clipping
+SURFACE_BRIGHTNESS mode=balanced height=650.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=650.0 custom=false offset=100.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=650.0 custom=false offset=104.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+SURFACE_BRIGHTNESS mode=balanced height=650.0 custom=false offset=60.0 before=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0] after=[134.0, 158.0, 173.0, 134.0, 158.0, 173.0]
+00:19 +12: (tearDownAll)
+00:19 +12: All tests passed!

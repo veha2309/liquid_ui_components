@@ -18,3 +18,15 @@ example/android/gradlew.bat
 example/android/gradle/wrapper/gradle-wrapper.jar
 **/*.jks
 **/*.keystore
+launch_video/
+ui_tester_runs/
+example/ui_tester_runs/
+example/optional_ui_tests/
+example/UI_TESTING.md
+**/.dart_tool/
+**/pubspec.lock
+screenshots/gallery.png
+screenshots/favorite-heart.png
+screenshots/panels-redesign.png
+screenshots/prompt-redesign.png
+**/__pycache__/

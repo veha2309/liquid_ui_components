@@ -1,0 +1,70 @@
+{
+  "morph_static_background": {
+    "frames": 24,
+    "build": {
+      "average_ms": 16.536333333333335,
+      "p90_ms": 20.253,
+      "max_ms": 26.108,
+      "over_16_67_ms": 10,
+      "over_8_33_ms": 24
+    },
+    "raster": {
+      "average_ms": 8.390250000000002,
+      "p90_ms": 10.889,
+      "max_ms": 11.917,
+      "over_16_67_ms": 0,
+      "over_8_33_ms": 11
+    }
+  },
+  "morph_live_background": {
+    "frames": 24,
+    "build": {
+      "average_ms": 17.289624999999997,
+      "p90_ms": 21.21,
+      "max_ms": 25.839,
+      "over_16_67_ms": 13,
+      "over_8_33_ms": 24
+    },
+    "raster": {
+      "average_ms": 7.706083333333333,
+      "p90_ms": 9.267,
+      "max_ms": 12.516,
+      "over_16_67_ms": 0,
+      "over_8_33_ms": 7
+    }
+  },
+  "scroll": {
+    "frames": 288,
+    "build": {
+      "average_ms": 2.4842187500000015,
+      "p90_ms": 5.187,
+      "max_ms": 9.387,
+      "over_16_67_ms": 0,
+      "over_8_33_ms": 1
+    },
+    "raster": {
+      "average_ms": 9.33664930555556,
+      "p90_ms": 12.164,
+      "max_ms": 17.365,
+      "over_16_67_ms": 1,
+      "over_8_33_ms": 175
+    }
+  },
+  "volume": {
+    "frames": 249,
+    "build": {
+      "average_ms": 2.196180722891566,
+      "p90_ms": 3.08,
+      "max_ms": 7.812,
+      "over_16_67_ms": 0,
+      "over_8_33_ms": 0
+    },
+    "raster": {
+      "average_ms": 10.075522088353408,
+      "p90_ms": 12.624,
+      "max_ms": 92.391,
+      "over_16_67_ms": 6,
+      "over_8_33_ms": 168
+    }
+  }
+}

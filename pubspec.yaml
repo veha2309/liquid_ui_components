@@ -1,6 +1,6 @@
 name: liquid_ui_components
-description: Configurable liquid glass controls for Flutter with optical surfaces, buttons, toolbars, segments, sliders, switches and spring-animated navigation.
-version: 0.2.0
+description: Liquid glass surfaces, controls, alerts, prompts, panels, morphing, blending and spring navigation for Flutter, with frosted and opaque fallbacks.
+version: 0.3.0
 repository: https://github.com/veha2309/liquid_ui_components
 issue_tracker: https://github.com/veha2309/liquid_ui_components/issues
 topics:
@@ -11,10 +11,18 @@ topics:
   - ui
 
 screenshots:
-  - description: Liquid glass controls with a sliding selector and volume slider.
-    path: screenshots/gallery.png
-  - description: Favorite heart animation in the interactive component gallery.
-    path: screenshots/favorite-heart.png
+  - description: Droplet, Jelly and Merge component captures in Frosted mode.
+    path: screenshots/v0.3.0/morph-styles.png
+  - description: Controls, navigation and shared glass surfaces on Android.
+    path: screenshots/v0.3.0/controls-light.png
+  - description: Inline alerts and contextual action panels on Android.
+    path: screenshots/v0.3.0/alerts-and-panels.png
+  - description: Themed glass confirmation prompt on Android.
+    path: screenshots/v0.3.0/confirmation.png
+  - description: Multiple draggable glass blend members on Android.
+    path: screenshots/v0.3.0/blending.png
+  - description: Dark-theme glass prompt on Android.
+    path: screenshots/v0.3.0/confirmation-dark.png
 environment:
   sdk: '>=3.12.2 <4.0.0'
   flutter: '>=3.44.0'
@@ -22,9 +30,14 @@ dependencies:
   flutter:
     sdk: flutter
   liquid_glass_easy: ^3.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
 platforms:
   android:
+
+flutter:
+  shaders:
+    - shaders/liquid_glass.frag

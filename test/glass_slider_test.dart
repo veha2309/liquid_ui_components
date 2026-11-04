@@ -43,6 +43,12 @@ void main() {
       expect(tester.getCenter(thumb).dx, closeTo(rect.right - 32, 0.1));
       expect(value, direction == TextDirection.ltr ? 1 : 0);
       expect(tester.getRect(thumb).right, lessThanOrEqualTo(rect.right));
+      final dynamics = tester
+          .widget<Transform>(
+            find.byKey(const ValueKey('liquid-dynamics-transform')),
+          )
+          .transform;
+      expect(dynamics.entry(0, 0), greaterThan(dynamics.entry(1, 1)));
       await gesture.moveTo(Offset(rect.left - 50, rect.center.dy));
       await tester.pump();
       expect(value, direction == TextDirection.ltr ? 0 : 1);
@@ -51,6 +57,14 @@ void main() {
       expect(tester.getCenter(thumb).dx, closeTo(rect.left + 32, 0.1));
       expect(starts, 1);
       expect(ends, 1);
+      expect(
+        tester
+            .widget<Transform>(
+              find.byKey(const ValueKey('liquid-dynamics-transform')),
+            )
+            .transform,
+        Matrix4.identity(),
+      );
       expect(tester.takeException(), isNull);
     });
   }

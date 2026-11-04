@@ -1,0 +1,21 @@
+name: liquid_glass_ui_checks
+publish_to: none
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  liquid_ui_components:
+    path: ../../
+  liquid_ui_components_example:
+    path: ../
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  ui_tester:
+    path: ../../../../ui_tester/packages/ui_tester
+  ui_tester_cli:
+    path: ../../../../ui_tester/packages/ui_tester_cli
