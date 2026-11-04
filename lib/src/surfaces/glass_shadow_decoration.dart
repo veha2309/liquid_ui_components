@@ -18,17 +18,29 @@ class GlassShadow extends StatelessWidget {
   final Duration duration;
 
   @override
-  Widget build(BuildContext context) => AnimatedContainer(
-    duration: duration,
-    // Never put the shadow beneath the backdrop filter: even the exterior blur
-    // can leak back into the glass near its rim.
-    foregroundDecoration: _GlassShadowDecoration(
+  Widget build(BuildContext context) {
+    final decoration = _GlassShadowDecoration(
       radius: radius,
       shape: shape,
       shadow: shadow,
-    ),
-    child: child,
-  );
+    );
+    // Explicitly animated geometry does not need an implicit controller and
+    // decoration tween rebuilt on every frame.
+    if (duration == Duration.zero) {
+      return DecoratedBox(
+        decoration: decoration,
+        position: DecorationPosition.foreground,
+        child: child,
+      );
+    }
+    return AnimatedContainer(
+      duration: duration,
+      // Never put the shadow beneath the backdrop filter: even the exterior blur
+      // can leak back into the glass near its rim.
+      foregroundDecoration: decoration,
+      child: child,
+    );
+  }
 }
 
 /// Paint only the exterior shadow. A normal BoxShadow fills the shape too:
@@ -92,13 +104,14 @@ class _GlassShadowPainter extends BoxPainter {
             textDirection: configuration.textDirection,
           ) ??
           (Path()..addRRect(decoration.radius.toRRect(rect)));
-      _exterior = Path.combine(
-        PathOperation.difference,
-        Path()..addRect(
+      // Exterior ring without a boolean path operation for each changing
+      // contour. The nested outline cuts a hole using the even-odd fill rule.
+      _exterior = Path()
+        ..fillType = PathFillType.evenOdd
+        ..addRect(
           rect.inflate(shadow.blurSigma * 4 + shadow.offset.distance + 1),
-        ),
-        _outline!,
-      );
+        )
+        ..addPath(_outline!, Offset.zero);
     }
     canvas.save();
     canvas.translate(offset.dx, offset.dy);

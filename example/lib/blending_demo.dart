@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:liquid_ui_components/liquid_glass.dart';
 
@@ -27,6 +28,7 @@ class _BlendingDemoState extends State<BlendingDemo> {
         children: [
           Expanded(child: Text('$memberCount blend members')),
           IconButton(
+            key: const ValueKey('blend-remove'),
             tooltip: 'Remove blend member',
             onPressed: memberCount > 0
                 ? () => setState(() => memberCount--)
@@ -34,6 +36,7 @@ class _BlendingDemoState extends State<BlendingDemo> {
             icon: const Icon(Icons.remove),
           ),
           IconButton(
+            key: const ValueKey('blend-add'),
             tooltip: 'Add blend member',
             onPressed: () => setState(() => memberCount++),
             icon: const Icon(Icons.add),
@@ -67,6 +70,7 @@ class _BlendingDemoState extends State<BlendingDemo> {
               ),
               borderRadius: index.isEven ? 34 : 18,
               child: IconButton(
+                key: ValueKey('blend-action-$index'),
                 tooltip: 'Blend action ${index + 1}',
                 onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
                   LiquidGlassToast(message: 'Action ${index + 1}'),
@@ -86,6 +90,7 @@ class _BlendingDemoState extends State<BlendingDemo> {
       ),
       Text('Viscosity ${(viscosity * 100).round()}%'),
       LiquidGlassSlider(
+        key: const ValueKey('blend-viscosity'),
         value: viscosity,
         label: '${(viscosity * 100).round()}%',
         semanticLabel: 'Lens viscosity',

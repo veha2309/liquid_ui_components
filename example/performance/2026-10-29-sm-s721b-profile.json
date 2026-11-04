@@ -1,0 +1,133 @@
+{
+  "metadata": {
+    "date": "2026-10-29",
+    "device": "Samsung SM S721B",
+    "android": "17 (API 37)",
+    "flutter": "3.47.5 stable",
+    "dart": "3.13.4",
+    "mode": "profile",
+    "display": "1080 x 2340; 120 Hz observed during run; adaptive refresh not locked",
+    "battery": "USB charging; 34.1 C observed near start",
+    "application": "component gallery (not Arc Tracker)",
+    "material": "Frosted (gallery default); optical quality modes not compared",
+    "morph": "droplet, inline; six open/close cycles per measured scenario after two warm-up cycles",
+    "source": "147738c plus uncommitted shared repaint, switch spring, navigation velocity and shadow optimizations",
+    "measurement": "native Flutter FrameTiming callbacks; fullyLive integration binding; wait/settle frames included",
+    "limitations": [
+      "single warm run; no before/after FPS claim",
+      "totalSpan includes scheduling/queue latency; build and raster are pipelined, not additive",
+      "budget exceedances are stage timings, not OS-presented dropped-frame counts",
+      "initial background-interrupted and pump-policy run discarded"
+    ]
+  },
+  "scenarios": {
+    "morph_static_background": {
+      "frames": 1321,
+      "build": {
+        "average_ms": 1.4301710825132488,
+        "p90_ms": 4.727,
+        "p95_ms": 5.209,
+        "max_ms": 15.72,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 19
+      },
+      "raster": {
+        "average_ms": 7.2681385314156035,
+        "p90_ms": 9.129,
+        "p95_ms": 10.293,
+        "max_ms": 25.906,
+        "over_16_67_ms": 8,
+        "over_8_33_ms": 589
+      },
+      "total_span": {
+        "average_ms": 11.358011355034064,
+        "p90_ms": 17.125,
+        "p95_ms": 18.823,
+        "max_ms": 34.828,
+        "over_16_67_ms": 157,
+        "over_8_33_ms": 866
+      }
+    },
+    "morph_live_background": {
+      "frames": 1310,
+      "build": {
+        "average_ms": 1.5465999999999998,
+        "p90_ms": 4.857,
+        "p95_ms": 5.428,
+        "max_ms": 12.949,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 19
+      },
+      "raster": {
+        "average_ms": 7.060992366412212,
+        "p90_ms": 9.295,
+        "p95_ms": 9.702,
+        "max_ms": 45.978,
+        "over_16_67_ms": 5,
+        "over_8_33_ms": 598
+      },
+      "total_span": {
+        "average_ms": 11.005702290076314,
+        "p90_ms": 17.092,
+        "p95_ms": 18.208,
+        "max_ms": 51.564,
+        "over_16_67_ms": 159,
+        "over_8_33_ms": 834
+      }
+    },
+    "scroll": {
+      "frames": 718,
+      "build": {
+        "average_ms": 1.5348022284122564,
+        "p90_ms": 3.884,
+        "p95_ms": 4.505,
+        "max_ms": 18.977,
+        "over_16_67_ms": 1,
+        "over_8_33_ms": 5
+      },
+      "raster": {
+        "average_ms": 10.967947075208915,
+        "p90_ms": 12.573,
+        "p95_ms": 12.779,
+        "max_ms": 16.822,
+        "over_16_67_ms": 1,
+        "over_8_33_ms": 708
+      },
+      "total_span": {
+        "average_ms": 18.275111420612806,
+        "p90_ms": 23.197,
+        "p95_ms": 24.133,
+        "max_ms": 27.448,
+        "over_16_67_ms": 483,
+        "over_8_33_ms": 716
+      }
+    },
+    "volume": {
+      "frames": 685,
+      "build": {
+        "average_ms": 1.31943503649635,
+        "p90_ms": 2.362,
+        "p95_ms": 2.723,
+        "max_ms": 4.472,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 0
+      },
+      "raster": {
+        "average_ms": 11.226858394160585,
+        "p90_ms": 11.874,
+        "p95_ms": 12.107,
+        "max_ms": 84.052,
+        "over_16_67_ms": 1,
+        "over_8_33_ms": 684
+      },
+      "total_span": {
+        "average_ms": 18.899290510948894,
+        "p90_ms": 22.329,
+        "p95_ms": 23.067,
+        "max_ms": 93.304,
+        "over_16_67_ms": 503,
+        "over_8_33_ms": 685
+      }
+    }
+  }
+}

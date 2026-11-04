@@ -164,7 +164,9 @@ class _MovableBlendItemsState extends State<_MovableBlendItems> {
     }
     if (items.isEmpty) return SizedBox.fromSize(size: size);
     return LiquidGlassSurface(
-      settings: config,
+      // Pointer updates already provide the geometry animation. Tweening the
+      // shadow separately leaves an old contour behind the moving members.
+      settings: config.copyWith(animationDuration: Duration.zero),
       shape: _BlendItemsBorder(items, smoothness: smoothness),
       child: SizedBox.fromSize(
         size: size,

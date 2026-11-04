@@ -20,6 +20,18 @@ enum LiquidGlassMorphMotion { droplet, jelly, merge }
 /// Children retain their state, but only the settled, visible
 /// target child accepts input, focus and accessibility traversal once revealed.
 class LiquidGlassMorph extends StatefulWidget {
+  /// Shared droplet perimeter for modal surfaces using the same liquid motion.
+  static OutlinedBorder transitionShape({
+    required BorderRadius borderRadius,
+    required double fullness,
+    Alignment direction = Alignment.bottomCenter,
+  }) => _FluidGlassBorder(
+    borderRadius: borderRadius,
+    fullness: fullness,
+    direction: direction,
+    motion: LiquidGlassMorphMotion.droplet,
+  );
+
   LiquidGlassMorph({
     super.key,
     required this.expanded,

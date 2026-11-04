@@ -1,0 +1,191 @@
+{
+  "metadata": {
+    "date": "2026-11-04",
+    "package_version": "0.3.0",
+    "device": "Samsung SM-S721B",
+    "android": "17 (API 37)",
+    "flutter": "3.47.5 stable",
+    "dart": "3.13.4",
+    "build_mode": "profile",
+    "rendering": "solid",
+    "renderer": "stable (liquid_glass_easy 3.3.1)",
+    "display": "1080 x 2340, adaptive refresh not locked; 60/120 Hz budgets reported as reference",
+    "conditions": "USB charging; 39.9 C observed before initial run, 40.1 C after initial comparison; not thermally controlled",
+    "source_lib_and_shaders_sha256": "553177c309ce68254e8eb16174bca444eb5e40bbaddd5243f94fbf126039c39b",
+    "source_hash_method": "sorted repository-relative lib/*.dart and shader paths, followed by file bytes with CRLF normalized to LF",
+    "method": "Flutter native FrameTiming, fullyLive binding, warm-up cycles, six measured open/close cycles; waiting/settle frames included",
+    "limitations": [
+      "One sequential warm run per mode; not a paired, randomized or thermally controlled comparison",
+      "No low-end Android hardware measured; not a device compatibility certification",
+      "Build and raster are pipelined; do not add them or convert stage durations into delivered FPS",
+      "Budget exceedances count stage timings, not OS-presented dropped frames",
+      "Full/Balanced optics and experimental native rendering not benchmarked for this release",
+      "Frosted gallery includes optical hold feedback on small slider/switch thumbs",
+      "Screenshot readback and GIF recording performed in separate runs"
+    ]
+  },
+  "scenarios": {
+    "morph_static_background": {
+      "frames": 1382,
+      "build": {
+        "average_ms": 1.1915347322720704,
+        "p90_ms": 3.574,
+        "p95_ms": 3.898,
+        "max_ms": 13.313,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 16
+      },
+      "raster": {
+        "average_ms": 5.080654848046304,
+        "p90_ms": 5.971,
+        "p95_ms": 6.544,
+        "max_ms": 10.596,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 14
+      },
+      "total_span": {
+        "average_ms": 7.15176917510855,
+        "p90_ms": 10.11,
+        "p95_ms": 11.13,
+        "max_ms": 20.432,
+        "over_16_67_ms": 8,
+        "over_8_33_ms": 268
+      }
+    },
+    "morph_live_background": {
+      "frames": 1384,
+      "build": {
+        "average_ms": 1.1416134393063584,
+        "p90_ms": 3.325,
+        "p95_ms": 3.804,
+        "max_ms": 12.642,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 13
+      },
+      "raster": {
+        "average_ms": 4.834994219653175,
+        "p90_ms": 6.002,
+        "p95_ms": 6.674,
+        "max_ms": 10.605,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 20
+      },
+      "total_span": {
+        "average_ms": 6.774180635838147,
+        "p90_ms": 9.565,
+        "p95_ms": 10.882,
+        "max_ms": 21.027,
+        "over_16_67_ms": 7,
+        "over_8_33_ms": 217
+      }
+    },
+    "scroll": {
+      "frames": 957,
+      "build": {
+        "average_ms": 1.058436781609194,
+        "p90_ms": 2.689,
+        "p95_ms": 3.213,
+        "max_ms": 8.757,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 1
+      },
+      "raster": {
+        "average_ms": 5.173887147335414,
+        "p90_ms": 5.868,
+        "p95_ms": 6.137,
+        "max_ms": 8.917,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 1
+      },
+      "total_span": {
+        "average_ms": 7.10231243469175,
+        "p90_ms": 8.96,
+        "p95_ms": 9.944,
+        "max_ms": 14.339,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 152
+      }
+    },
+    "volume": {
+      "frames": 936,
+      "build": {
+        "average_ms": 0.8905662393162386,
+        "p90_ms": 1.688,
+        "p95_ms": 1.824,
+        "max_ms": 2.827,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 0
+      },
+      "raster": {
+        "average_ms": 4.890596153846154,
+        "p90_ms": 5.822,
+        "p95_ms": 6.235,
+        "max_ms": 11.03,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 9
+      },
+      "total_span": {
+        "average_ms": 6.554565170940166,
+        "p90_ms": 8.022,
+        "p95_ms": 8.342,
+        "max_ms": 12.213,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 48
+      }
+    },
+    "prompt_live_background": {
+      "frames": 1127,
+      "build": {
+        "average_ms": 0.9818438331854473,
+        "p90_ms": 1.858,
+        "p95_ms": 2.104,
+        "max_ms": 5.722,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 0
+      },
+      "raster": {
+        "average_ms": 4.833705412599816,
+        "p90_ms": 6.146,
+        "p95_ms": 6.708,
+        "max_ms": 9.726,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 9
+      },
+      "total_span": {
+        "average_ms": 6.553196095829642,
+        "p90_ms": 8.45,
+        "p95_ms": 9.315,
+        "max_ms": 15.002,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 125
+      }
+    },
+    "panel_live_background": {
+      "frames": 1133,
+      "build": {
+        "average_ms": 0.9150114739629301,
+        "p90_ms": 1.839,
+        "p95_ms": 2.073,
+        "max_ms": 11.799,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 1
+      },
+      "raster": {
+        "average_ms": 5.174417475728156,
+        "p90_ms": 6.194,
+        "p95_ms": 6.973,
+        "max_ms": 10.726,
+        "over_16_67_ms": 0,
+        "over_8_33_ms": 20
+      },
+      "total_span": {
+        "average_ms": 6.934105913503967,
+        "p90_ms": 8.903,
+        "p95_ms": 9.797,
+        "max_ms": 21.091,
+        "over_16_67_ms": 1,
+        "over_8_33_ms": 162
+      }
+    }
+  }
+}

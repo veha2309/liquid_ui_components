@@ -1,6 +1,6 @@
 # Samsung device investigation — 2026-10-23
 
-Device: SM S721B / RZCY71CKL3M. Flutter profile mode, same gallery scenario.
+Device: SM S721B / DEVICE_ID. Flutter profile mode, same gallery scenario.
 Times below are raster/GPU-stage milliseconds, not end-to-end input latency.
 
 | Run | Scroll mean | Scroll p90 | Volume mean | Volume p90 |
@@ -30,7 +30,7 @@ workaround avoids the unstable optical path; it does not fix native refraction.
 Reproduce from example/ with:
 
 ```
-flutter drive --profile --driver test_driver/performance.dart --target integration_test/glass_performance_test.dart -d RZCY71CKL3M
+flutter drive --profile --driver test_driver/performance.dart --target integration_test/glass_performance_test.dart -d DEVICE_ID
 ```
 
 The driver saves build/glass_performance.json. Set GLASS_PERFORMANCE_REPORT to

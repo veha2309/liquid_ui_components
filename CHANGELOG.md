@@ -1,4 +1,20 @@
-## 0.3.0-dev.1 (unreleased)
+## 0.3.0 (2026-11-04)
+
+* Add `LiquidGlassAlert` with info/success/warning/error states, themed colors,
+  live announcements, custom actions and accessible dismissal.
+* Add `LiquidGlassPrompt.confirm` and typed custom prompts, plus reusable
+  `LiquidGlassPanel` cards and keyboard-aware modal bottom panels.
+* Give modals a restrained Glass Morph droplet reveal: staggered damped springs,
+  stable text layout, a consistent rendering path, and reduced-motion support.
+* Fix Frosted/Opaque multi-item drag shadows trailing behind the moving contour.
+* Settle navigation toward the released destination before reconciling controlled
+  selection, preserving spring velocity and clearing residual drag stretch.
+* Paint navigation icons and badges above the selector in Frosted/Opaque and
+  accessibility fallbacks, retaining icon refraction only for optical lenses.
+* Add nine Android release screenshots, a feature/API guide, and reproducible
+  profile frame-time reports with explicit 60/120 Hz budgets and device limits.
+* Make the gallery runnable without unpublished local tooling. Keep optional
+  ui_tester workflows in a separate development package, excluded from pub.
 
 * Paint surface shadows outside their outlines so shared backdrop captures do
   not pick up a surface's own shadow when earlier siblings leave the viewport.
@@ -49,9 +65,9 @@
 * Fix the gallery background painter throwing on zero-size startup layouts;
   guard both background layers and test resizing from zero to a valid width.
 
-Native-renderer flicker remains unresolved; replacing the stable renderer is
-not release-ready. Device performance reports describe the temporary workaround.
-This development version is not a published release.
+The experimental native renderer remains opt-in with unresolved flicker reports.
+The stable adapter is the default; the gallery starts in Frosted mode. Performance
+measurements apply only to their recorded workload/device, not all low-end phones.
 
 ## 0.2.1 (2026-10-22)
 

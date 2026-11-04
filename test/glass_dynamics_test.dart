@@ -111,11 +111,11 @@ void main() {
     final child = Builder(
       builder: (_) {
         builds++;
-        return RepaintBoundary(
-          child: CustomPaint(
-            painter: _PaintCounter(() => paints++),
-            child: const SizedBox(width: 120, height: 56),
-          ),
+        // Callers should not need to add their own repaint boundary to keep
+        // static content out of every press/drag animation repaint.
+        return CustomPaint(
+          painter: _PaintCounter(() => paints++),
+          child: const SizedBox(width: 120, height: 56),
         );
       },
     );

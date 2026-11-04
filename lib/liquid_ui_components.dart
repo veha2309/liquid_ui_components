@@ -7,6 +7,7 @@ export 'src/components/liquid_glass_morph.dart';
 export 'src/components/liquid_glass_blend.dart';
 export 'src/motion/liquid_glass_dynamics.dart';
 export 'src/components/liquid_glass_toast.dart';
+export 'src/components/liquid_glass_panels.dart';
 export 'src/scrolling/liquid_glass_scroll_edge.dart';
 export 'src/scrolling/liquid_glass_scroll.dart' show LiquidGlassScrollBehavior;
 

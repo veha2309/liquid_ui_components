@@ -3,6 +3,48 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_ui_components/liquid_ui_components.dart';
 
 void main() {
+  for (final rendering in [
+    LiquidGlassRendering.frosted,
+    LiquidGlassRendering.solid,
+  ]) {
+    testWidgets('$rendering shadow follows the dragged contour immediately', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: LiquidGlassBlend.items(
+              size: const Size(300, 220),
+              settings: LiquidGlassSettings(rendering: rendering),
+              items: const [
+                LiquidGlassBlendItem(
+                  bounds: Rect.fromLTWH(20, 20, 60, 60),
+                  child: Center(child: Text('Drag')),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Drag')),
+      );
+      await gesture.moveBy(const Offset(90, 60));
+      await tester.pump();
+      final surface = tester.widget<LiquidGlassSurface>(
+        find.byType(LiquidGlassSurface),
+      );
+      expect(surface.settings!.animationDuration, Duration.zero);
+      final path = surface.shape!.getOuterPath(
+        const Rect.fromLTWH(0, 0, 300, 220),
+      );
+      expect(path.contains(const Offset(50, 50)), isFalse);
+      expect(path.contains(const Offset(140, 110)), isTrue);
+      await gesture.up();
+      await tester.pump();
+      expect(tester.hasRunningAnimations, isFalse);
+    });
+  }
   testWidgets(
     'nearby members fuse across the former six-item boundary in Frosted',
     (tester) async {

@@ -13,6 +13,10 @@ The main package's [README](../README.md) describes all public components and
 configuration options. See [PERFORMANCE.md](PERFORMANCE.md) for device timing
 measurements and the repeatable performance test.
 
+The optional `optional_ui_tests/` development package integrates `ui_tester` for repeatable interaction checks,
+automatic exploration, failure replay and local reports. See
+[UI_TESTING.md](UI_TESTING.md) for local dependency setup and widget/device commands.
+
 The backdrop and favorite animation are example implementations in `lib/`.
 They are not exported by the package. Use the motion button in the app bar to
 pause background activity. **Glass quality** selects:

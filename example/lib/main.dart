@@ -4,6 +4,7 @@ import 'package:liquid_ui_components/liquid_glass.dart';
 import 'gallery_backdrop.dart';
 import 'favorite_button.dart';
 import 'blending_demo.dart';
+import 'panels_demo.dart';
 
 void main() => runApp(const GlassGallery());
 
@@ -68,14 +69,14 @@ class _GlassGalleryState extends State<GlassGallery> {
         builder: (context) => Scaffold(
           extendBody: true,
           appBar: AppBar(
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.surface.withValues(alpha: 1),
+            backgroundColor: Theme.of(context).colorScheme.surface
+                .withValues(alpha: 1),
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0,
             title: const Text('Liquid Glass Studio'),
             actions: [
               TextButton(
+                key: const ValueKey('open-blending'),
                 onPressed: () {
                   final settings = LiquidGlassTheme.of(context);
                   showDialog<void>(
@@ -93,11 +94,13 @@ class _GlassGalleryState extends State<GlassGallery> {
                             child: Padding(
                               padding: const EdgeInsets.all(20),
                               child: SingleChildScrollView(
+                                key: const ValueKey('blend-dialog-scroll'),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     const BlendingDemo(),
                                     TextButton(
+                                      key: const ValueKey('close-blending'),
                                       onPressed: () => Navigator.pop(context),
                                       child: const Text('Close demo'),
                                     ),
@@ -114,6 +117,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                 child: const Text('Blending'),
               ),
               IconButton(
+                key: const ValueKey('background-motion'),
                 tooltip: backgroundMotion
                     ? 'Pause background'
                     : 'Animate background',
@@ -126,6 +130,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                 ),
               ),
               IconButton(
+                key: const ValueKey('theme-toggle'),
                 tooltip: dark ? 'Light theme' : 'Dark theme',
                 onPressed: () => setState(() => dark = !dark),
                 icon: Icon(dark ? Icons.light_mode : Icons.dark_mode),
@@ -144,6 +149,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                     24,
                 opacity: scrollEdges ? 0.72 : 0,
                 child: ListView(
+                  key: const ValueKey('gallery-scroll'),
                   controller: scrollController,
                   padding: EdgeInsets.fromLTRB(
                     24,
@@ -173,6 +179,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         LiquidGlassButton(
+                          key: const ValueKey('save-collection'),
                           onPressed: () {
                             final previous = collectionSaved;
                             setState(() => collectionSaved = true);
@@ -197,6 +204,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                         ),
                         const FavoriteGlassButton(),
                         const LiquidGlassButton(
+                          key: ValueKey('disabled-action'),
                           onPressed: null,
                           child: Text('Unavailable'),
                         ),
@@ -225,8 +233,8 @@ class _GlassGalleryState extends State<GlassGallery> {
                             },
                           ),
                           LiquidGlassMorph(
-                            expanded: morphExpanded,
                             motion: morphMotion,
+                            expanded: morphExpanded,
                             onExpandedChanged: (value) =>
                                 setState(() => morphExpanded = value),
                             collapsedSize: const Size(160, 56),
@@ -256,6 +264,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                             collapsedChild: Semantics(
                               label: 'Expand quick controls',
                               child: TextButton(
+                                key: const ValueKey('expand-controls'),
                                 onPressed: () =>
                                     setState(() => morphExpanded = true),
                                 child: const Align(
@@ -273,6 +282,9 @@ class _GlassGalleryState extends State<GlassGallery> {
                                     children: [
                                       const Spacer(),
                                       IconButton(
+                                        key: const ValueKey(
+                                          'collapse-controls',
+                                        ),
                                         tooltip: 'Collapse controls',
                                         onPressed: () => setState(
                                           () => morphExpanded = false,
@@ -334,6 +346,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: LiquidGlassSegmentedControl<int>(
+                          key: const ValueKey('activity-selector'),
                           selected: segment,
                           onSelectionChanged: (value) =>
                               setState(() => segment = value),
@@ -390,6 +403,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                           ),
                           const SizedBox(height: 8),
                           LiquidGlassSlider(
+                            key: const ValueKey('volume-slider'),
                             value: currentVolume,
                             thumbIcon: currentVolume == 0
                                 ? Icons.volume_off_rounded
@@ -426,6 +440,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                               children: [
                                 const Expanded(child: Text('Clear variant')),
                                 LiquidGlassSwitch(
+                                  key: const ValueKey('clear-variant'),
                                   value: clear,
                                   semanticLabel: 'Clear variant',
                                   onChanged: (value) =>
@@ -437,6 +452,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                               children: [
                                 const Expanded(child: Text('Liquid dynamics')),
                                 LiquidGlassSwitch(
+                                  key: const ValueKey('liquid-dynamics'),
                                   value: liquidDynamics,
                                   semanticLabel: 'Liquid dynamics',
                                   onChanged: (value) =>
@@ -450,6 +466,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                                   child: Text('Scroll edge separation'),
                                 ),
                                 LiquidGlassSwitch(
+                                  key: const ValueKey('scroll-edges'),
                                   value: scrollEdges,
                                   semanticLabel: 'Scroll edge separation',
                                   onChanged: (value) =>
@@ -466,6 +483,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                                   child: Text('Scroll-responsive navigation'),
                                 ),
                                 LiquidGlassSwitch(
+                                  key: const ValueKey('scroll-navigation'),
                                   value: scrollNavigation,
                                   semanticLabel: 'Scroll-responsive navigation',
                                   onChanged: (value) =>
@@ -484,6 +502,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                                     child: Text('Reduce transparency'),
                                   ),
                                   LiquidGlassSwitch(
+                                    key: const ValueKey('reduce-transparency'),
                                     value: reduceTransparency,
                                     semanticLabel: 'Reduce transparency',
                                     onChanged: (value) => setState(
@@ -520,6 +539,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                             const SizedBox(height: 16),
                             Text('Blur ${blur.round()}'),
                             LiquidGlassSlider(
+                              key: const ValueKey('blur-slider'),
                               value: blur,
                               min: 0,
                               max: 24,
@@ -529,6 +549,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                             ),
                             Text('Tint opacity ${(opacity * 100).round()}%'),
                             LiquidGlassSlider(
+                              key: const ValueKey('tint-slider'),
                               value: opacity,
                               min: 0,
                               max: 1,
@@ -538,6 +559,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                             ),
                             Text('Rim light ${lightDirection.round()}°'),
                             LiquidGlassSlider(
+                              key: const ValueKey('light-slider'),
                               value: lightDirection,
                               min: 0,
                               max: 360,
@@ -548,6 +570,7 @@ class _GlassGalleryState extends State<GlassGallery> {
                               'Optical edge width ${edgeWidth.toStringAsFixed(1)}',
                             ),
                             LiquidGlassSlider(
+                              key: const ValueKey('edge-slider'),
                               value: edgeWidth,
                               min: 0,
                               max: 16,
@@ -566,12 +589,15 @@ class _GlassGalleryState extends State<GlassGallery> {
                     ),
                     const SizedBox(height: 24),
                     const BlendingDemo(),
+                    const SizedBox(height: 24),
+                    const PanelsDemo(),
                   ],
                 ),
               ),
             ),
           ),
           bottomNavigationBar: LiquidGlassNavigationBar(
+            key: const ValueKey('gallery-navigation'),
             scrollController: scrollController,
             shrinkOnScroll: scrollNavigation,
             selectedIndex: index,

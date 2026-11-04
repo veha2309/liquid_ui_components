@@ -417,10 +417,14 @@ class _LiquidGlassSwitchState extends State<LiquidGlassSwitch> {
                         horizontal: 2,
                         vertical: 8,
                       ),
-                      child: AnimatedAlign(
-                        alignment: widget.value
-                            ? AlignmentDirectional.centerEnd
-                            : AlignmentDirectional.centerStart,
+                      child: _GlassSelectionSlide(
+                        position:
+                            (widget.value
+                                    ? AlignmentDirectional.centerEnd
+                                    : AlignmentDirectional.centerStart)
+                                .resolve(Directionality.of(context))
+                                .x,
+                        intensity: config.dynamicsIntensity,
                         duration: MediaQuery.disableAnimationsOf(context)
                             ? Duration.zero
                             : (widget.settings ?? LiquidGlassTheme.of(context))
@@ -602,7 +606,7 @@ class _GlassSelectionSlideState extends State<_GlassSelectionSlide>
         SpringSimulation(
           SpringDescription.withDurationAndBounce(
             duration: widget.duration,
-            bounce: 0.03,
+            bounce: 0.08,
           ),
           _position.value,
           widget.position,
@@ -640,7 +644,7 @@ class _GlassSelectionSlideState extends State<_GlassSelectionSlide>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _position,
-    child: widget.child,
+    child: RepaintBoundary(child: widget.child),
     builder: (context, child) {
       final stretch =
           (_position.velocity.abs() / 15).clamp(0.0, 1.0) * widget.intensity;

@@ -187,7 +187,7 @@ class _LiquidGlassDynamicsState extends State<LiquidGlassDynamics>
       child: AnimatedBuilder(
         animation: _motion,
         // Keep the glass lens and control out of the per-frame build path.
-        child: widget.child,
+        child: RepaintBoundary(child: widget.child),
         builder: (context, child) {
           final strength = _enabled ? widget.intensity : 0.0;
           final press = _press.value.clamp(-0.15, 1.15) * strength;

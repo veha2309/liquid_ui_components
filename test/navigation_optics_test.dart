@@ -1,8 +1,79 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_ui_components/liquid_ui_components.dart';
 
 void main() {
+  for (final mode in [
+    LiquidGlassRendering.frosted,
+    LiquidGlassRendering.solid,
+  ]) {
+    for (final brightness in Brightness.values) {
+      testWidgets(
+        '$mode keeps selected icons and badges above the selector in $brightness',
+        (tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: ThemeData(brightness: brightness),
+              home: StatefulBuilder(
+                builder: (context, setState) => Scaffold(
+                  bottomNavigationBar: LiquidGlassNavigationBar(
+                    items: const [
+                      LiquidGlassNavigationItem(
+                        label: 'Home',
+                        icon: Icons.home,
+                        badge: '3',
+                      ),
+                      LiquidGlassNavigationItem(
+                        label: 'Chats',
+                        icon: Icons.chat,
+                      ),
+                    ],
+                    selectedIndex: 0,
+                    onTap: (_) {},
+                    glassSettings: LiquidGlassSettings(rendering: mode),
+                  ),
+                ),
+              ),
+            ),
+          );
+          void expectForeground() {
+            final selector = find.byKey(
+              const ValueKey('android-glass-selector'),
+            );
+            final scene = tester.widget<Stack>(
+              find.ancestor(of: selector, matching: find.byType(Stack)).first,
+            );
+            for (final icon in [Icons.home, Icons.chat]) {
+              expect(find.byIcon(icon), findsOneWidget);
+              expect(
+                find.descendant(
+                  of: find.byWidget(scene.children.last),
+                  matching: find.byIcon(icon),
+                ),
+                findsOneWidget,
+              );
+            }
+            expect(find.text('3'), findsOneWidget);
+          }
+
+          expectForeground();
+          final gesture = await tester.startGesture(
+            tester.getCenter(find.byIcon(Icons.home)),
+          );
+          await tester.pump(const Duration(milliseconds: 220));
+          expectForeground();
+          await gesture.moveTo(tester.getCenter(find.byIcon(Icons.chat)));
+          await tester.pump();
+          expectForeground();
+          await gesture.up();
+          await tester.pumpAndSettle();
+          expectForeground();
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
   testWidgets('themed navigation paints icons beneath the optical selector', (
     tester,
   ) async {
@@ -32,14 +103,14 @@ void main() {
         of: find.byWidget(scene.children[1]),
         matching: find.byIcon(Icons.home),
       ),
-      findsOneWidget,
+      ui.ImageFilter.isShaderFilterSupported ? findsOneWidget : findsNothing,
     );
     expect(
       find.descendant(
         of: find.byWidget(scene.children[3]),
         matching: find.byIcon(Icons.home),
       ),
-      findsNothing,
+      ui.ImageFilter.isShaderFilterSupported ? findsNothing : findsOneWidget,
     );
     expect(find.text('Home'), findsOneWidget);
 

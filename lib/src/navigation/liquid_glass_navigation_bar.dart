@@ -274,16 +274,17 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
     );
   }
 
-  void _settle() {
+  void _settle({int? target}) {
+    final destination = (target ?? widget.selectedIndex).toDouble();
     if (_reduceMotion) {
-      _position.value = widget.selectedIndex.toDouble();
+      _position.value = destination;
     } else {
       _position.animateWith(
         SpringSimulation(
           const SpringDescription(mass: 1, stiffness: 380, damping: 29),
           _position.value,
-          widget.selectedIndex.toDouble(),
-          0,
+          destination,
+          _position.velocity,
         ),
       );
     }
@@ -333,10 +334,20 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
     _pointer = null;
     _lift.reverse();
     _setCompact(false);
+    _motion = 0;
+    _settle(target: index);
     widget.onTap(index);
     _endPreview();
-    // Restore the controlled selection if the host declines navigation.
-    _settle();
+    // Give the controlled parent a frame to accept the destination before
+    // restoring a declined selection; never spring toward the stale index.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted &&
+          _active &&
+          _pointer == null &&
+          widget.selectedIndex != index) {
+        _settle();
+      }
+    });
   }
 
   @override
@@ -446,6 +457,15 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
   }
 
   Widget _scene(BoxConstraints constraints, bool dark, bool highContrast) {
+    final config = widget.glassSettings;
+    final refractIcons =
+        ui.ImageFilter.isShaderFilterSupported &&
+        !highContrast &&
+        !_reduceMotion &&
+        !(config?.reduceTransparency ?? false) &&
+        (config == null ||
+            config.rendering == LiquidGlassRendering.automatic ||
+            config.rendering == LiquidGlassRendering.balanced);
     final position = _position.value.clamp(0.0, widget.items.length - 1.0);
     final lift = _reduceMotion
         ? 0.0
@@ -477,8 +497,8 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
             ),
           ),
         ),
-        // Icons must be painted before the lens so its backdrop input contains
-        // them. Painting another crisp icon above it hides the optical smear.
+        // Optical lenses sample icons below them. Portable and opaque lenses
+        // need their icons above the surface so tint/blur cannot erase them.
         Positioned.fill(
           child: IgnorePointer(
             child: ExcludeSemantics(
@@ -487,7 +507,13 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
                   horizontal: 5,
                   vertical: 5 * (1 - _compactProgress),
                 ),
-                child: _destinations(position, lift, dark, iconsOnly: true),
+                child: _destinations(
+                  position,
+                  lift,
+                  dark,
+                  iconsOnly: true,
+                  paintIcons: refractIcons,
+                ),
               ),
             ),
           ),
@@ -517,7 +543,12 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
               horizontal: 5,
               vertical: 5 * (1 - _compactProgress),
             ),
-            child: _destinations(position, lift, dark),
+            child: _destinations(
+              position,
+              lift,
+              dark,
+              paintIcons: !refractIcons,
+            ),
           ),
         ),
       ],
@@ -567,6 +598,7 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
                   1.0,
                 ),
                 shadowOpacity: 0,
+                animationDuration: Duration.zero,
               )
             : config,
         borderRadius: BorderRadius.circular(radius),
@@ -645,6 +677,7 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
     double lift,
     bool dark, {
     bool iconsOnly = false,
+    bool paintIcons = true,
   }) {
     final preview = _dragging ? position.round() : widget.selectedIndex;
     final theme = Theme.of(context);
@@ -653,7 +686,7 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
         final item = widget.items[index];
         final active = index == preview;
         final color = active ? widget.tintColor : widget.unselectedColor;
-        final icon = iconsOnly
+        final icon = paintIcons
             ? Icon(item.icon, size: 23, color: color)
             : const SizedBox(width: 23, height: 23);
         final proximity = (1 - (position - index).abs()).clamp(0.0, 1.0);
@@ -673,7 +706,7 @@ class _AndroidGlassBarState extends State<_AndroidGlassBar>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  item.badge == null || !iconsOnly
+                  item.badge == null || !paintIcons
                       ? icon
                       : Badge(label: Text(item.badge!), child: icon),
                   SizedBox(height: 3 * (1 - _compactProgress)),

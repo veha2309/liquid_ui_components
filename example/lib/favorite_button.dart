@@ -122,6 +122,7 @@ class _FavoriteGlassButtonState extends State<FavoriteGlassButton>
   Widget build(BuildContext context) => Semantics(
     toggled: _favorite,
     child: LiquidGlassIconButton(
+      key: const ValueKey('favorite-button'),
       icon: Icon(
         _favorite ? Icons.favorite_rounded : Icons.favorite_outline,
         color: _favorite ? const Color(0xffdc3e75) : null,

@@ -1,4 +1,4 @@
-# Architecture — v0.3.0 development
+# Architecture — v0.3.0
 
 The public API is `lib/liquid_ui_components.dart`. This file contains exports
 only. The three compatibility entrypoints export that same API; applications
@@ -13,7 +13,7 @@ should not import implementation files under `src/`.
 | `src/motion/` | Shared touch dynamics and accessibility motion adaptations |
 | `src/scrolling/` | Scroll invalidation, overscroll policy and edge separation |
 | `src/navigation/` | Destination model, public navigation widget, selection and scroll state |
-| `src/components/` | Buttons, toolbar, selector, switch, slider, toast, morph and blend |
+| `src/components/` | Buttons, toolbar, selector, switch, slider, toast, morph, blend, alerts, prompts and panels |
 
 Configuration has no dependency on components or rendering. Rendering depends
 on configuration, never on a specific control. Surfaces compose rendering and
@@ -32,7 +32,7 @@ the fix retains grouped frosted blur without adding a filter or an offscreen lay
 ## Renderer policy
 
 `LiquidGlassSettings.renderer` defaults to `LiquidGlassRenderer.stable`, backed
-by the exact previously tested `liquid_glass_easy` 3.3.1 dependency. Third-party
+by the `liquid_glass_easy` 3.x adapter (validated with 3.3.1). Third-party
 types are contained in `rendering/stable_glass_backdrop.dart`. The structural
 refactor does not require adopting the prototype renderer.
 
@@ -69,9 +69,7 @@ and `flutter test` in the repository root. Build the example with
 Device integration tests live in `example/integration_test/` and exercise
 blending, scrolling, interactions and performance.
 
-The v0.3.0 renderer is under development. Automated fallback tests and successful
-shader compilation cannot establish GPU visual parity or performance. Before
-release, run the integration suite and inspect refraction, merged and separated
-droplets, transformed/clipped surfaces, extreme scrolling, accessibility modes
-and idle/animated frame timings on a connected Impeller device. Desktop, web and
-iOS remain unvalidated. No v0.3.0 publication is implied by this branch.
+The experimental native renderer remains opt-in and is not a replacement for
+the stable backend. Release evidence and conditions are in `doc/PERFORMANCE.md`;
+automated widget tests alone do not establish GPU parity or performance.
+Desktop, web, iOS and low-end Android hardware remain unvalidated.
